@@ -1,0 +1,15 @@
+logging:
+  level.root: WARN
+  level.no: ${LOG_LEVEL:DEBUG}
+  level.org.springframework: WARN
+  level.org.springframework.web: WARN
+  level.org.apache.jena.riot: ERROR
+server:
+  port: 8080
+spring:
+  data.mongodb.uri: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/serviceHarvester?authSource=admin&authMechanism=SCRAM-SHA-1
+
+---
+spring:
+  profiles: develop
+  data.mongodb.uri: mongodb://admin:admin@localhost:27017/serviceHarvester?authSource=admin&authMechanism=SCRAM-SHA-1
