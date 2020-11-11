@@ -35,8 +35,8 @@ data class ServiceDBO (
             fdkId != other.fdkId -> false
             issued != other.issued -> false
             modified != other.modified -> false
-            !zippedModelsAreIsometric(turtleHarvested, other.turtleHarvested) -> false
-            else -> zippedModelsAreIsometric(turtleService, other.turtleService)
+            !zippedModelsAreIsomorphic(turtleHarvested, other.turtleHarvested) -> false
+            else -> zippedModelsAreIsomorphic(turtleService, other.turtleService)
         }
     }
 
@@ -66,7 +66,7 @@ data class MiscellaneousTurtle (
         return when {
             id != other.id -> false
             isHarvestedSource != other.isHarvestedSource -> false
-            else -> zippedModelsAreIsometric(turtle, other.turtle)
+            else -> zippedModelsAreIsomorphic(turtle, other.turtle)
         }
 
     }
@@ -79,7 +79,7 @@ data class MiscellaneousTurtle (
     }
 }
 
-private fun zippedModelsAreIsometric(zip0: String, zip1: String): Boolean {
+private fun zippedModelsAreIsomorphic(zip0: String, zip1: String): Boolean {
     val model0 = parseRDFResponse(ungzip(zip0), JenaType.TURTLE, null)
     val model1 = parseRDFResponse(ungzip(zip1), JenaType.TURTLE, null)
 
