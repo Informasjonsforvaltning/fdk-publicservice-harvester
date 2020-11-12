@@ -4,7 +4,14 @@ import com.mongodb.ConnectionString
 import com.mongodb.MongoClientSettings
 import com.mongodb.client.MongoClient
 import com.mongodb.client.MongoClients
+import no.fdk.fdk_service_harvester.model.MiscellaneousTurtle
+import no.fdk.fdk_service_harvester.model.ServiceDBO
+import no.fdk.fdk_service_harvester.rdf.JenaType
+import no.fdk.fdk_service_harvester.rdf.createRDFResponse
+import no.fdk.fdk_service_harvester.rdf.parseRDFResponse
+import no.fdk.fdk_service_harvester.service.ungzip
 import no.fdk.fdk_service_harvester.utils.ApiTestContext.Companion.mongoContainer
+import org.apache.jena.rdf.model.Model
 import org.bson.codecs.configuration.CodecRegistries
 import org.bson.codecs.pojo.PojoCodecProvider
 import org.slf4j.LoggerFactory
@@ -62,4 +69,43 @@ fun populateDB() {
     serviceCollection.insertMany(serviceDBPopulation())
 
     client.close()
+}
+
+fun MiscellaneousTurtle.printTurtleDiff(expected: MiscellaneousTurtle) {
+    checkIfIsomorphicAndPrintDiff(
+        actual = parseRDFResponse(ungzip(turtle), JenaType.TURTLE, null)!!,
+        expected = parseRDFResponse(ungzip(expected.turtle), JenaType.TURTLE, null)!!,
+        name = id
+    )
+}
+
+fun ServiceDBO.printTurtleDiff(expected: ServiceDBO) {
+    checkIfIsomorphicAndPrintDiff(
+        actual = parseRDFResponse(ungzip(turtleHarvested), JenaType.TURTLE, null)!!,
+        expected = parseRDFResponse(ungzip(expected.turtleHarvested), JenaType.TURTLE, null)!!,
+        name = "harvested model from ${expected.uri}"
+    )
+    checkIfIsomorphicAndPrintDiff(
+        actual = parseRDFResponse(ungzip(turtleService), JenaType.TURTLE, null)!!,
+        expected = parseRDFResponse(ungzip(expected.turtleService), JenaType.TURTLE, null)!!,
+        name = "full model from ${expected.uri}"
+    )
+}
+fun checkIfIsomorphicAndPrintDiff(actual: Model, expected: Model, name: String): Boolean {
+    val isIsomorphic = actual.isIsomorphicWith(expected)
+
+    if (!isIsomorphic) {
+        val actualDiff = actual.difference(expected).createRDFResponse(JenaType.TURTLE)
+        val expectedDiff = expected.difference(actual).createRDFResponse(JenaType.TURTLE)
+
+        if (actualDiff.isNotEmpty()) {
+            logger.error("non expected nodes in $name:")
+            logger.error(actualDiff)
+        }
+        if (expectedDiff.isNotEmpty()) {
+            logger.error("missing nodes in $name:")
+            logger.error(expectedDiff)
+        }
+    }
+    return isIsomorphic
 }

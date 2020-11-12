@@ -6,6 +6,9 @@ import org.springframework.context.ApplicationContextInitializer
 import org.springframework.context.ConfigurableApplicationContext
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.wait.strategy.Wait
+import java.io.IOException
+import java.net.HttpURLConnection
+import java.net.URL
 
 abstract class ApiTestContext {
 
@@ -24,6 +27,8 @@ abstract class ApiTestContext {
 
         init {
 
+            startMockServer()
+
             mongoContainer = KGenericContainer("mongo:latest")
                 .withEnv(MONGO_ENV_VALUES)
                 .withExposedPorts(MONGO_PORT)
@@ -32,6 +37,19 @@ abstract class ApiTestContext {
             mongoContainer.start()
 
             populateDB()
+
+            try {
+                val con = URL("http://localhost:5000/ping").openConnection() as HttpURLConnection
+                con.connect()
+                if (con.responseCode != 200) {
+                    logger.debug("Ping to mock server failed")
+                    stopMockServer()
+                }
+            } catch (e: IOException) {
+                e.printStackTrace()
+            } catch (e: InterruptedException) {
+                e.printStackTrace()
+            }
 
         }
     }

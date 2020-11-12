@@ -5,9 +5,24 @@
 
 <http://public-service-publisher.fellesdatakatalog.digdir.no/services/1> a cpsv:PublicService ;
   dct:identifier "1" ;
-  dct:title "Samordnet registermelding"@nb ;
+  dct:title "Samordnet registermeldring"@nb ;
   dct:description "Elektronisk skjema for registrering av selskap"@nb ;
   cv:hasCompetentAuthority <https://organization-catalogue.fellesdatakatalog.digdir.no/organizations/974760673> ;
+  cv:isGroupedBy <http://public-service-publisher.fellesdatakatalog.digdir.no/events/1> ;
+.
+
+<http://public-service-publisher.fellesdatakatalog.digdir.no/services/2> a cpsv:PublicService ;
+  dct:identifier "2" ;
+  dct:title "Søknad om serverings- og skjenkebevilling"@nb ;
+  dct:description "Søknad om skjenkebevilling"@nb ;
+  cv:hasCompetentAuthority <https://organization-catalogue.fellesdatakatalog.digdir.no/organizations/964983291> ;
+.
+
+<http://public-service-publisher.fellesdatakatalog.digdir.no/services/3> a cpsv:PublicService ;
+  dct:identifier "3" ;
+  dct:title "Ny næringsmiddelvirksomhet inkl. matkontaktmaterialer"@nb ;
+  dct:description "Dette skjemaet  brukes for å registrere en ny virksomhet, eller søke om godkjenning av en ny næringsmiddelvirksomhet. Skjemaet skal også brukes dersom du vil utvide aktiviteten i en allerede eksisterende virksomhet og starte med en ny aktivitet som ikke er registrert."@nb ;
+  cv:hasCompetentAuthority <https://organization-catalogue.fellesdatakatalog.digdir.no/organizations/985399077> ;
   cv:isGroupedBy <http://public-service-publisher.fellesdatakatalog.digdir.no/events/1> ;
 .
 

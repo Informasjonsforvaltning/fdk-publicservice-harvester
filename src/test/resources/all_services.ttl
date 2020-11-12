@@ -1,4 +1,4 @@
-@prefix cpsv: <http://www.w3.org/ns/dcat#> .
+@prefix cpsv: <http://purl.org/vocab/cpsv#> .
 @prefix dct: <http://purl.org/dc/terms/> .
 @prefix cv: <http://data.europa.eu/m8g/> .
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
@@ -19,7 +19,6 @@
   dct:title "Søknad om serverings- og skjenkebevilling"@nb ;
   dct:description "Søknad om skjenkebevilling"@nb ;
   cv:hasCompetentAuthority <https://organization-catalogue.fellesdatakatalog.digdir.no/organizations/964983291> ;
-  cv:isGroupedBy <http://public-service-publisher.fellesdatakatalog.digdir.no/events/1> ;
 .
 
 <http://public-service-publisher.fellesdatakatalog.digdir.no/services/3> a cpsv:PublicService ;
@@ -30,46 +29,35 @@
   cv:isGroupedBy <http://public-service-publisher.fellesdatakatalog.digdir.no/events/1> ;
 .
 
-<http://public-service-publisher.fellesdatakatalog.digdir.no/services/4> a cpsv:PublicService ;
-  dct:identifier "4" ;
-  dct:title "Registrering av ny fettutskiller"@nb ;
-  dct:description "Registrering av ny fettutskiller."@nb ;
-  cv:hasCompetentAuthority <https://organization-catalogue.fellesdatakatalog.digdir.no/organizations/985399077> ;
-  cv:isGroupedBy <http://public-service-publisher.fellesdatakatalog.digdir.no/events/1> ;
-.
-
 <http://public-service-publisher.fellesdatakatalog.digdir.no/events/1> a cv:Event ;
   dct:identifier "1" ;
   dct:title "Starte og drive restaurant"@nb ;
   dct:description "Elektronisk prosess for etablering og oppstart av restaurantdrift."@nb ;
   dct:type <https://data.norge.no/concpets/livshendelse> ;
   dct:relation <http://public-service-publisher.fellesdatakatalog.digdir.no/services/1> ,
-               <http://public-service-publisher.fellesdatakatalog.digdir.no/services/2> ,
                <http://public-service-publisher.fellesdatakatalog.digdir.no/services/3> ;
   .
 
 <https://data.norge.no/concpets/livshendelse> a skos:Concept ;
   .
 
-<http://localhost:5000/services/409c97dd-57e0-3a29-b5a3-023733cf5064>
+<http://localhost:5000/services/d5d0c07c-c14f-3741-9aa3-126960958cf0>
         a                  dcat:CatalogRecord ;
-        dct:identifier     "409c97dd-57e0-3a29-b5a3-023733cf5064" ;
+        dct:identifier     "d5d0c07c-c14f-3741-9aa3-126960958cf0" ;
         dct:issued         "2020-10-05T13:15:39.831Z"^^xsd:dateTime ;
         dct:modified       "2020-10-05T13:15:39.831Z"^^xsd:dateTime ;
         foaf:primaryTopic  <http://public-service-publisher.fellesdatakatalog.digdir.no/services/1> .
 
-<http://localhost:5000/services/c62e4787-e2ad-438a-98f2-4da146f24676>
+<http://localhost:5000/services/6ce4e524-3226-3591-ad99-c026705d4259>
         a                  dcat:CatalogRecord ;
-        dct:identifier     "c62e4787-e2ad-438a-98f2-4da146f24676" ;
+        dct:identifier     "6ce4e524-3226-3591-ad99-c026705d4259" ;
         dct:issued         "2020-10-05T13:15:39.831Z"^^xsd:dateTime ;
         dct:modified       "2020-10-05T13:15:39.831Z"^^xsd:dateTime ;
         foaf:primaryTopic  <http://public-service-publisher.fellesdatakatalog.digdir.no/services/2> .
 
-<http://localhost:5000/services/a4bbfe60-95ae-4172-b436-2423d6fd097c>
+<http://localhost:5000/services/31249174-df02-3746-9d61-59fc61b4c5f9>
         a                  dcat:CatalogRecord ;
-        dct:identifier     "a4bbfe60-95ae-4172-b436-2423d6fd097c" ;
+        dct:identifier     "31249174-df02-3746-9d61-59fc61b4c5f9" ;
         dct:issued         "2020-10-05T13:15:39.831Z"^^xsd:dateTime ;
         dct:modified       "2020-10-05T13:15:39.831Z"^^xsd:dateTime ;
         foaf:primaryTopic  <http://public-service-publisher.fellesdatakatalog.digdir.no/services/3> .
-
-

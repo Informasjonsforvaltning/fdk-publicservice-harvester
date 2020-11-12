@@ -3,8 +3,6 @@ package no.fdk.fdk_service_harvester.rdf
 import no.fdk.fdk_service_harvester.Application
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.rdf.model.ModelFactory
-import org.apache.jena.rdf.model.ResourceRequiredException
-import org.apache.jena.rdf.model.Statement
 import org.slf4j.LoggerFactory
 import java.io.ByteArrayOutputStream
 import java.io.StringReader
