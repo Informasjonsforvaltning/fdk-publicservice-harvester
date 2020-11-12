@@ -3,11 +3,11 @@
 @prefix cv: <http://data.europa.eu/m8g/> .
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
 
-<http://public-service-publisher.fellesdatakatalog.digdir.no/services/1> a cpsv:PublicService ;
-  dct:identifier "1" ;
-  dct:title "Samordnet registermelding"@nb ;
-  dct:description "Elektronisk skjema for registrering av selskap"@nb ;
-  cv:hasCompetentAuthority <https://organization-catalogue.fellesdatakatalog.digdir.no/organizations/974760673> ;
+<http://public-service-publisher.fellesdatakatalog.digdir.no/services/3> a cpsv:PublicService ;
+  dct:identifier "3" ;
+  dct:title "Ny næringsmiddelvirksomhet inkl. matkontaktmaterialer"@nb ;
+  dct:description "Dette skjemaet  brukes for å registrere en ny virksomhet, eller søke om godkjenning av en ny næringsmiddelvirksomhet. Skjemaet skal også brukes dersom du vil utvide aktiviteten i en allerede eksisterende virksomhet og starte med en ny aktivitet som ikke er registrert."@nb ;
+  cv:hasCompetentAuthority <https://organization-catalogue.fellesdatakatalog.digdir.no/organizations/985399077> ;
   cv:isGroupedBy <http://public-service-publisher.fellesdatakatalog.digdir.no/events/1> ;
 .
 

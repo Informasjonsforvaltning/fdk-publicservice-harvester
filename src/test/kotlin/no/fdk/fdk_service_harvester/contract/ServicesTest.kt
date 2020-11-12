@@ -1,9 +1,6 @@
 package no.fdk.fdk_service_harvester.contract
 
-import no.fdk.fdk_service_harvester.utils.ApiTestContext
-import no.fdk.fdk_service_harvester.utils.SERVICE_ID_0
-import no.fdk.fdk_service_harvester.utils.TestResponseReader
-import no.fdk.fdk_service_harvester.utils.apiGet
+import no.fdk.fdk_service_harvester.utils.*
 import org.junit.jupiter.api.*
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.web.server.LocalServerPort
@@ -31,7 +28,8 @@ class ServicesTest: ApiTestContext() {
 
         val expected = responseReader.parseFile("all_services.ttl", "TURTLE")
         val responseModel = responseReader.parseResponse(response["body"] as String, "TURTLE")
-        assertTrue(expected.isIsomorphicWith(responseModel))
+
+        assertTrue(checkIfIsomorphicAndPrintDiff(actual = responseModel, expected = expected, name = "ServicesTest.findAll"))
     }
 
     @Test
@@ -42,7 +40,7 @@ class ServicesTest: ApiTestContext() {
         val expected = responseReader.parseFile("service_0.ttl", "TURTLE")
         val responseModel = responseReader.parseResponse(response["body"] as String, "RDF/JSON")
 
-        assertTrue(expected.isIsomorphicWith(responseModel))
+        assertTrue(checkIfIsomorphicAndPrintDiff(actual = responseModel, expected = expected, name = "ServicesTest.findSpecific"))
     }
 
     @Test
