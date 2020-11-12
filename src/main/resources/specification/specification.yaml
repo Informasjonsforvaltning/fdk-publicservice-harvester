@@ -1,0 +1,88 @@
+openapi: 3.0.2
+info:
+  title: FDK service harvester
+  description: Tilgjengeliggjør tjenester ihht DCAT-AP-NO
+  version: '1.0'
+  contact:
+    name: Digitaliseringsdirektoratet
+    url: 'https://fellesdatakatalog.digdir.no'
+    email: fellesdatakatalog@digdir.no
+  license:
+    name: License of API
+    url: 'http://data.norge.no/nlod/no/2.0'
+tags:
+  - name: dcat-ap-no-services
+    description: DCAT-AP-NO services
+servers:
+  - url: 'https://services.fellesdatakatalog.digdir.no'
+    description: Produksjonsmiljø
+  - url: 'https://services.staging.fellesdatakatalog.digdir.no'
+    description: Testmiljø
+  - url: 'https://services.demo.fellesdatakatalog.digdir.no'
+    description: Demomiljø
+paths:
+  /services:
+    get:
+      tags:
+        - dcat-ap-no-services
+      description: Returnerer en liste av tjenester
+      operationId: getServices
+      responses:
+        '200':
+          description: OK
+          content:
+            text/turtle:
+              schema:
+                type: string
+            text/n3:
+              schema:
+                type: string
+            application/rdf+json:
+              schema:
+                type: string
+            application/ld+json:
+              schema:
+                type: string
+            application/rdf+xml:
+              schema:
+                type: string
+            application/n-triples:
+              schema:
+                type: string
+  '/services/{id}':
+    get:
+      tags:
+        - dcat-ap-no-services
+      description: Returnerer en tjeneste med gitt id
+      operationId: getServiceById
+      parameters:
+        - name: id
+          in: path
+          description: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            text/turtle:
+              schema:
+                type: string
+            text/n3:
+              schema:
+                type: string
+            application/rdf+json:
+              schema:
+                type: string
+            application/ld+json:
+              schema:
+                type: string
+            application/rdf+xml:
+              schema:
+                type: string
+            application/n-triples:
+              schema:
+                type: string
+        '404':
+          description: Service with requested id does not exist
