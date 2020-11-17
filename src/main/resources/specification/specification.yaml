@@ -14,14 +14,14 @@ tags:
   - name: dcat-ap-no-services
     description: DCAT-AP-NO services
 servers:
-  - url: 'https://services.fellesdatakatalog.digdir.no'
+  - url: 'https://data.norge.no/publicservices'
     description: Produksjonsmiljø
-  - url: 'https://services.staging.fellesdatakatalog.digdir.no'
+  - url: 'https://staging.fellesdatakatalog.digdir.no/publicservices'
     description: Testmiljø
-  - url: 'https://services.demo.fellesdatakatalog.digdir.no'
+  - url: 'https://demo.fellesdatakatalog.digdir.no/publicservices'
     description: Demomiljø
 paths:
-  /services:
+  /publicservices:
     get:
       tags:
         - dcat-ap-no-services
@@ -49,7 +49,7 @@ paths:
             application/n-triples:
               schema:
                 type: string
-  '/services/{id}':
+  '/publicservices/{id}':
     get:
       tags:
         - dcat-ap-no-services

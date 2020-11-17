@@ -12,12 +12,12 @@ spring:
     port: 5672
     username: ${RABBIT_USERNAME}
     password: ${RABBIT_PASSWORD}
-  data.mongodb.uri: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/serviceHarvester?authSource=admin&authMechanism=SCRAM-SHA-1
+  data.mongodb.uri: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/publicServiceHarvester?authSource=admin&authMechanism=SCRAM-SHA-1
 fuseki:
   unionGraphUri: ${FDK_FUSEKI_SERVICE_URI:http://fdk-fuseki-service:8080/fuseki}/harvested?graph=https://services.fellesdatakatalog.digdir.no
 application:
   tmpHarvest: ${TMP_HARVEST:https://gist.githubusercontent.com/stigbd/17ad84a3ae2a6702ec303e36dfd495ab/raw/51fecb7b4d5bc5f6bc02348bf1fffab734639c41/fdk-public-service-publisher.ttl}
-  serviceHarvesterUri: ${FDK_BASE_URI:https://staging.fellesdatakatalog.digdir.no}/services
+  publicServiceHarvesterUri: ${FDK_BASE_URI:https://staging.fellesdatakatalog.digdir.no}/publicservices
   harvestAdminRootUrl: ${HARVEST_ADMIN_ROOT_URL:http://fdk-harvest-admin:8080/api}
 
 ---
@@ -28,12 +28,12 @@ spring:
     port: 5672
     username: admin
     password: admin
-  data.mongodb.uri: mongodb://admin:admin@localhost:27017/serviceHarvester?authSource=admin&authMechanism=SCRAM-SHA-1
+  data.mongodb.uri: mongodb://admin:admin@localhost:27017/publicServiceHarvester?authSource=admin&authMechanism=SCRAM-SHA-1
 fuseki:
   unionGraphUri: http://localhost:3030/fuseki/harvested?graph=https://services.fellesdatakatalog.digdir.no
 application:
-  tmpHarvest: https://raw.githubusercontent.com/Informasjonsforvaltning/fdk-service-harvester/feat/not/harvest-public-services/src/test/resources/harvest_response_0.ttl
-  serviceHarvesterUri: https://staging.fellesdatakatalog.digdir.no/services
+  tmpHarvest: https://raw.githubusercontent.com/Informasjonsforvaltning/fdk-publicservice-harvester/feat/not/harvest-public-services/src/test/resources/harvest_response_0.ttl
+  publicServiceHarvesterUri: https://staging.fellesdatakatalog.digdir.no/publicservices
   harvestAdminRootUrl: https://admin-api.staging.fellesdatakatalog.digdir.no/api
 
 ---
@@ -46,6 +46,6 @@ spring:
     password: admin
 application:
   tmpHarvest: http://localhost:5000/fdk-public-service-publisher.ttl
-  serviceHarvesterUri: http://localhost:5000/services
+  publicServiceHarvesterUri: http://localhost:5000/publicservices
   harvestAdminRootUrl: http://localhost:5000/api
 fuseki.unionGraphUri: http://localhost:5000/fuseki/harvested?graph=https://services.fellesdatakatalog.digdir.no
