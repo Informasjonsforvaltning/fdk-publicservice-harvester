@@ -1,5 +1,5 @@
-# fdk-publicservice-harvester
-fdk-publicservice-harvester will harvest catalogs of public services (CPSV) according to the DCAT-AP-NO v2 specification.
+# fdk-public-service-harvester
+fdk-public-service-harvester will harvest catalogs of public services (CPSV) according to the DCAT-AP-NO v2 specification.
 
 ## Requirements
 - maven
