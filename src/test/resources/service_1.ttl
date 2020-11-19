@@ -13,7 +13,7 @@
   cv:hasCompetentAuthority <https://organization-catalogue.fellesdatakatalog.digdir.no/organizations/964983291> ;
 .
 
-<http://localhost:5000/services/6ce4e524-3226-3591-ad99-c026705d4259>
+<http://localhost:5000/public-services/6ce4e524-3226-3591-ad99-c026705d4259>
         a                  dcat:CatalogRecord ;
         dct:identifier     "6ce4e524-3226-3591-ad99-c026705d4259" ;
         dct:issued         "2020-10-05T13:15:39.831Z"^^xsd:dateTime ;
