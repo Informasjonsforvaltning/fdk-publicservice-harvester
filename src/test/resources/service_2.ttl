@@ -26,7 +26,7 @@
 <https://data.norge.no/concpets/livshendelse> a skos:Concept ;
   .
 
-<http://localhost:5000/services/31249174-df02-3746-9d61-59fc61b4c5f9>
+<http://localhost:5000/public-services/31249174-df02-3746-9d61-59fc61b4c5f9>
         a                  dcat:CatalogRecord ;
         dct:identifier     "31249174-df02-3746-9d61-59fc61b4c5f9" ;
         dct:issued         "2020-10-05T13:15:39.831Z"^^xsd:dateTime ;

@@ -20,7 +20,7 @@ mvn spring-boot:run -Dspring-boot.run.profiles=develop
 
 Then in another terminal e.g.
 ```
-% curl http://localhost:8080/services
+% curl http://localhost:8080/public-services
 ```
 
 ## Datastore
@@ -29,7 +29,7 @@ To inspect the MongoDB datastore, open a terminal and run:
 docker-compose exec mongodb mongo
 use admin
 db.auth("admin","admin")
-use serviceHarvester
+use publicServiceHarvester
 db.services.find()
 db.misc.find()
 ```
