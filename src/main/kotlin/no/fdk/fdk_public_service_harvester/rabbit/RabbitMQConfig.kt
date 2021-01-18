@@ -36,5 +36,5 @@ open class RabbitMQConfig {
         BindingBuilder
             .bind(senderQueue)
             .to(topicExchange)
-            .with("publicservices.harvester.UpdateSearchTrigger")
+            .with("public_services.harvester.UpdateSearchTrigger")
 }
