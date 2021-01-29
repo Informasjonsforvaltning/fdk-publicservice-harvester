@@ -16,7 +16,6 @@ spring:
 fuseki:
   unionGraphUri: ${FDK_FUSEKI_SERVICE_URI:http://fdk-fuseki-service:8080/fuseki}/harvested?graph=https://services.fellesdatakatalog.digdir.no
 application:
-  tmpHarvest: ${TMP_HARVEST:https://raw.githubusercontent.com/Informasjonsforvaltning/fdk-testdata/master/testdata/fdk-public-service-publisher.ttl}
   publicServiceHarvesterUri: ${FDK_BASE_URI:https://staging.fellesdatakatalog.digdir.no}/public-services
   harvestAdminRootUrl: ${HARVEST_ADMIN_ROOT_URL:http://fdk-harvest-admin:8080/api}
 
@@ -32,7 +31,6 @@ spring:
 fuseki:
   unionGraphUri: http://localhost:3030/fuseki/harvested?graph=https://services.fellesdatakatalog.digdir.no
 application:
-  tmpHarvest: https://raw.githubusercontent.com/Informasjonsforvaltning/fdk-testdata/master/testdata/fdk-public-service-publisher.ttl
   publicServiceHarvesterUri: https://staging.fellesdatakatalog.digdir.no/public-services
   harvestAdminRootUrl: https://admin-api.staging.fellesdatakatalog.digdir.no/api
 
@@ -45,7 +43,6 @@ spring:
     username: admin
     password: admin
 application:
-  tmpHarvest: http://localhost:5000/fdk-public-service-publisher.ttl
   publicServiceHarvesterUri: http://localhost:5000/public-services
   harvestAdminRootUrl: http://localhost:5000/api
 fuseki.unionGraphUri: http://localhost:5000/fuseki/harvested?graph=https://services.fellesdatakatalog.digdir.no

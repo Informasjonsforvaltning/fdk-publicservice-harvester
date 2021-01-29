@@ -30,7 +30,7 @@ class HarvesterActivity(
 
         val harvest = launch {
             harvestAdminAdapter.getDataSources(params)
-                .filter { it.dataType == "service" }
+                .filter { it.dataType == "publicService" }
                 .forEach {
                     if (it.url != null) {
                         try {
