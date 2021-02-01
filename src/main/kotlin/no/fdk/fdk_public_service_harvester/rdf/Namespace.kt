@@ -12,3 +12,14 @@ class CPSV {
     }
 
 }
+
+class CV {
+
+    companion object {
+        private val m = ModelFactory.createDefaultModel()
+        val uri = "http://data.europa.eu/m8g/"
+        val Participation: Property = m.createProperty( "${uri}Participation")
+        val playsRole: Property = m.createProperty( "${uri}playsRole")
+    }
+
+}

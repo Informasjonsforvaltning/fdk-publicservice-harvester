@@ -2,12 +2,14 @@
 @prefix dct: <http://purl.org/dc/terms/> .
 @prefix cv: <http://data.europa.eu/m8g/> .
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix foaf:  <http://xmlns.com/foaf/0.1/> .
 
 <http://public-service-publisher.fellesdatakatalog.digdir.no/services/3> a cpsv:PublicService ;
   dct:identifier "3" ;
   dct:title "Ny næringsmiddelvirksomhet inkl. matkontaktmaterialer"@nb ;
   dct:description "Dette skjemaet  brukes for å registrere en ny virksomhet, eller søke om godkjenning av en ny næringsmiddelvirksomhet. Skjemaet skal også brukes dersom du vil utvide aktiviteten i en allerede eksisterende virksomhet og starte med en ny aktivitet som ikke er registrert."@nb ;
   cv:hasCompetentAuthority <https://organization-catalogue.fellesdatakatalog.digdir.no/organizations/985399077> ;
+  cv:hasParticipation <http://public-service-publisher.fellesdatakatalog.digdir.no/participation/1> ;
   cv:isGroupedBy <http://public-service-publisher.fellesdatakatalog.digdir.no/events/1> ;
 .
 
@@ -22,3 +24,14 @@
 
 <https://data.norge.no/concpets/livshendelse> a skos:Concept ;
   .
+
+<http://public-service-publisher.fellesdatakatalog.digdir.no/participation/1> a cv:Participation ;
+  dct:identifier "1" ;
+  dct:description "Statistisk sentralbyrås Virksomhets- og foretaksregister"@nb ;
+  cv:role <https://data.norge.no/concepts/101> .
+
+<https://data.brreg.no/enhetsregisteret/api/enheter/971526920> a dct:Agent ;
+  dct:identifier "971526920" ;
+  dct:title "Statistisk sentralbyrå"@nb ;
+  foaf:name "STATISTISK SENTRALBYRÅ" ;
+  cv:playsRole <http://public-service-publisher.fellesdatakatalog.digdir.no/participation/1> .
