@@ -17,16 +17,12 @@ private val logger = LoggerFactory.getLogger(HarvestAdminAdapter::class.java)
 @Service
 class HarvestAdminAdapter(private val applicationProperties: ApplicationProperties) {
 
-    private fun urlWithParameters(params: Map<String, String>?): URL {
-        val paramString: String = if (params != null && params.isNotEmpty()) {
-            val paramList = mutableListOf<String>()
-            params.forEach { paramList.add("${it.key}=${it.value}") }
-
-            "?${paramList.joinToString("&")}"
-        } else ""
-
-        return URL("${applicationProperties.harvestAdminRootUrl}/datasources$paramString")
-    }
+    fun urlWithParameters(params: Map<String, String>?): URL =
+        if (params != null && params.isNotEmpty()) {
+            URL("${applicationProperties.harvestAdminRootUrl}/datasources?${
+                params.map { "${it.key}=${it.value}" }.joinToString("&")
+            }")
+        } else URL("${applicationProperties.harvestAdminRootUrl}/datasources")
 
     fun getDataSources(queryParams: Map<String, String>?): List<HarvestDataSource> {
         val url = urlWithParameters(queryParams)
