@@ -43,6 +43,22 @@ private fun Statement.isResourceProperty(): Boolean =
         false
     }
 
+private fun Model.addAgentsAssociatedWithParticipation(resource: Resource): Model {
+    resource.model
+        .listResourcesWithProperty(RDF.type, DCTerms.Agent)
+        .toList()
+        .filter { it.hasProperty(CV.playsRole, resource) }
+        .forEach { codeElement ->
+            add(codeElement.listProperties())
+
+            codeElement.listProperties().toList()
+                .filter { it.isResourceProperty() }
+                .forEach { add(it.resource.listProperties()) }
+        }
+
+    return this
+}
+
 private fun Model.recursiveAddNonPublicServiceResources(resource: Resource, recursiveCount: Int): Model {
     val newCount = recursiveCount - 1
     val types = resource.listProperties(RDF.type)
@@ -59,6 +75,8 @@ private fun Model.recursiveAddNonPublicServiceResources(resource: Resource, recu
                 .forEach { recursiveAddNonPublicServiceResources(it.resource, newCount) }
         }
     }
+
+    if (types.contains(CV.Participation)) addAgentsAssociatedWithParticipation(resource)
 
     return this
 }
