@@ -26,6 +26,6 @@ val NEW_TEST_HARVEST_DATE: Calendar = Calendar.Builder().setTimeZone(TimeZone.ge
 val TEST_HARVEST_SOURCE = HarvestDataSource(
     url = "http://localhost:5000/fdk-public-service-publisher.ttl",
     acceptHeaderValue = "text/turtle",
-    dataType = "service",
-    dataSourceType = "DCAT-AP-NO"
+    dataType = "publicService",
+    dataSourceType = "CPSV-AP-NO"
 )
