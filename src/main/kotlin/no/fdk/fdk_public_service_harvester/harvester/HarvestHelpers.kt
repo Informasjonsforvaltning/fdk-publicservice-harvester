@@ -3,10 +3,9 @@ package no.fdk.fdk_public_service_harvester.harvester
 import no.fdk.fdk_public_service_harvester.model.PublicServiceDBO
 import no.fdk.fdk_public_service_harvester.rdf.*
 import no.fdk.fdk_public_service_harvester.service.ungzip
-import org.apache.jena.rdf.model.Model
-import org.apache.jena.rdf.model.Resource
-import org.apache.jena.rdf.model.ResourceRequiredException
-import org.apache.jena.rdf.model.Statement
+import org.apache.jena.query.QueryExecutionFactory
+import org.apache.jena.query.QueryFactory
+import org.apache.jena.rdf.model.*
 import org.apache.jena.sparql.vocabulary.FOAF
 import org.apache.jena.vocabulary.*
 import java.util.*
@@ -65,8 +64,7 @@ private fun Model.recursiveAddNonPublicServiceResources(resource: Resource, recu
         .toList()
         .map { it.`object` }
 
-    if (!types.contains(CPSV.PublicService)) {
-
+    if (resourceShouldBeAdded(resource.uri, types)) {
         add(resource.listProperties())
 
         if (newCount > 0) {
@@ -103,4 +101,18 @@ fun Model.addMetaPrefixes(): Model {
     setNsPrefix("xsd", XSD.NS)
 
     return this
+}
+
+private fun Model.resourceShouldBeAdded(resourceURI: String, types: List<RDFNode>): Boolean =
+    when {
+        types.contains(CPSV.PublicService) -> false
+        containsTriple("<${resourceURI}>", "a", "?o") -> false
+        else -> true
+    }
+
+private fun Model.containsTriple(subj: String, pred: String, obj: String): Boolean {
+    val askQuery = "ASK { $subj $pred $obj }"
+
+    val query = QueryFactory.create(askQuery)
+    return QueryExecutionFactory.create(query, this).execAsk()
 }
