@@ -7,11 +7,8 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.index.Indexed
 import org.springframework.data.mongodb.core.mapping.Document
 
-
-const val UNION_ID = "services-union-graph"
-
-@Document(collection = "services")
-data class PublicServiceDBO (
+@Document(collection = "serviceMeta")
+data class PublicServiceMeta (
     @Id
     val uri: String,
 
@@ -19,53 +16,22 @@ data class PublicServiceDBO (
     val fdkId: String,
 
     val issued: Long,
-    val modified: Long,
+    val modified: Long
+)
 
-    val turtleHarvested: String,
-    val turtleService: String
-) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as PublicServiceDBO
-
-        return when {
-            uri != other.uri -> false
-            fdkId != other.fdkId -> false
-            issued != other.issued -> false
-            modified != other.modified -> false
-            !zippedModelsAreIsomorphic(turtleHarvested, other.turtleHarvested) -> false
-            else -> zippedModelsAreIsomorphic(turtleService, other.turtleService)
-        }
-    }
-
-    override fun hashCode(): Int {
-        var result = uri.hashCode()
-        result = 31 * result + fdkId.hashCode()
-        result = 31 * result + issued.hashCode()
-        result = 31 * result + modified.hashCode()
-        result = 31 * result + turtleHarvested.hashCode()
-        result = 31 * result + turtleService.hashCode()
-        return result
-    }
-}
-
-@Document(collection = "misc")
-data class MiscellaneousTurtle (
+@Document(collection = "turtle")
+data class TurtleDBO (
         @Id val id: String,
-        val isHarvestedSource: Boolean,
         val turtle: String
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as MiscellaneousTurtle
+        other as TurtleDBO
 
         return when {
             id != other.id -> false
-            isHarvestedSource != other.isHarvestedSource -> false
             else -> zippedModelsAreIsomorphic(turtle, other.turtle)
         }
 
@@ -73,7 +39,6 @@ data class MiscellaneousTurtle (
 
     override fun hashCode(): Int {
         var result = id.hashCode()
-        result = 31 * result + isHarvestedSource.hashCode()
         result = 31 * result + turtle.hashCode()
         return result
     }

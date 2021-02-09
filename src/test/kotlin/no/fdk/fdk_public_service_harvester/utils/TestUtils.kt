@@ -4,12 +4,8 @@ import com.mongodb.ConnectionString
 import com.mongodb.MongoClientSettings
 import com.mongodb.client.MongoClient
 import com.mongodb.client.MongoClients
-import no.fdk.fdk_public_service_harvester.model.MiscellaneousTurtle
-import no.fdk.fdk_public_service_harvester.model.PublicServiceDBO
 import no.fdk.fdk_public_service_harvester.rdf.JenaType
 import no.fdk.fdk_public_service_harvester.rdf.createRDFResponse
-import no.fdk.fdk_public_service_harvester.rdf.parseRDFResponse
-import no.fdk.fdk_public_service_harvester.service.ungzip
 import no.fdk.fdk_public_service_harvester.utils.ApiTestContext.Companion.mongoContainer
 import org.apache.jena.rdf.model.Model
 import org.bson.codecs.configuration.CodecRegistries
@@ -62,35 +58,15 @@ fun populateDB() {
     val client: MongoClient = MongoClients.create(connectionString)
     val mongoDatabase = client.getDatabase(MONGO_COLLECTION).withCodecRegistry(pojoCodecRegistry)
 
-    val miscCollection = mongoDatabase.getCollection("misc")
-    miscCollection.insertMany(miscDBPopulation())
+    val miscCollection = mongoDatabase.getCollection("turtle")
+    miscCollection.insertMany(turleDBPopulation())
 
-    val serviceCollection = mongoDatabase.getCollection("services")
-    serviceCollection.insertMany(serviceDBPopulation())
+    val serviceCollection = mongoDatabase.getCollection("serviceMeta")
+    serviceCollection.insertMany(metaDBPopulation())
 
     client.close()
 }
 
-fun MiscellaneousTurtle.printTurtleDiff(expected: MiscellaneousTurtle) {
-    checkIfIsomorphicAndPrintDiff(
-        actual = parseRDFResponse(ungzip(turtle), JenaType.TURTLE, null)!!,
-        expected = parseRDFResponse(ungzip(expected.turtle), JenaType.TURTLE, null)!!,
-        name = id
-    )
-}
-
-fun PublicServiceDBO.printTurtleDiff(expected: PublicServiceDBO) {
-    checkIfIsomorphicAndPrintDiff(
-        actual = parseRDFResponse(ungzip(turtleHarvested), JenaType.TURTLE, null)!!,
-        expected = parseRDFResponse(ungzip(expected.turtleHarvested), JenaType.TURTLE, null)!!,
-        name = "harvested model from ${expected.uri}"
-    )
-    checkIfIsomorphicAndPrintDiff(
-        actual = parseRDFResponse(ungzip(turtleService), JenaType.TURTLE, null)!!,
-        expected = parseRDFResponse(ungzip(expected.turtleService), JenaType.TURTLE, null)!!,
-        name = "full model from ${expected.uri}"
-    )
-}
 fun checkIfIsomorphicAndPrintDiff(actual: Model, expected: Model, name: String): Boolean {
     val isIsomorphic = actual.isIsomorphicWith(expected)
 
