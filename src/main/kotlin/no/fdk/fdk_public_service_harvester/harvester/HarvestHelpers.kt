@@ -1,8 +1,6 @@
 package no.fdk.fdk_public_service_harvester.harvester
 
-import no.fdk.fdk_public_service_harvester.model.PublicServiceDBO
 import no.fdk.fdk_public_service_harvester.rdf.*
-import no.fdk.fdk_public_service_harvester.service.ungzip
 import org.apache.jena.query.QueryExecutionFactory
 import org.apache.jena.query.QueryFactory
 import org.apache.jena.rdf.model.*
@@ -11,9 +9,9 @@ import org.apache.jena.vocabulary.*
 import java.util.*
 
 
-fun PublicServiceRDFModel.harvestDiff(dbo: PublicServiceDBO?): Boolean =
-    if (dbo == null) true
-    else !harvested.isIsomorphicWith(parseRDFResponse(ungzip(dbo.turtleHarvested), JenaType.TURTLE, null))
+fun PublicServiceRDFModel.harvestDiff(dbTurtle: String?): Boolean =
+    if (dbTurtle == null) true
+    else !harvested.isIsomorphicWith(parseRDFResponse(dbTurtle, JenaType.TURTLE, null))
 
 fun splitServicesFromRDF(harvested: Model): List<PublicServiceRDFModel> =
     harvested.listResourcesWithProperty(RDF.type, CPSV.PublicService)
@@ -30,7 +28,7 @@ fun splitServicesFromRDF(harvested: Model): List<PublicServiceRDFModel> =
                 }
 
             PublicServiceRDFModel(
-                resource = resource,
+                resourceURI = resource.uri,
                 harvested = model
             )
         }
@@ -90,7 +88,7 @@ fun createIdFromUri(uri: String): String =
         .toString()
 
 data class PublicServiceRDFModel (
-    val resource: Resource,
+    val resourceURI: String,
     val harvested: Model
 )
 

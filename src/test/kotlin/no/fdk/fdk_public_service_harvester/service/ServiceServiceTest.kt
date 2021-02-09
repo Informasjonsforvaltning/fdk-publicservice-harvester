@@ -2,24 +2,18 @@ package no.fdk.fdk_public_service_harvester.service
 
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
-import no.fdk.fdk_public_service_harvester.model.MiscellaneousTurtle
-import no.fdk.fdk_public_service_harvester.model.UNION_ID
 import no.fdk.fdk_public_service_harvester.rdf.JenaType
-import no.fdk.fdk_public_service_harvester.repository.PublicServicesRepository
-import no.fdk.fdk_public_service_harvester.repository.MiscellaneousRepository
 import no.fdk.fdk_public_service_harvester.utils.*
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
-import java.util.*
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @Tag("unit")
 class PublicServicesServiceTest {
-    private val publicServicesRepository: PublicServicesRepository = mock()
-    private val miscRepository: MiscellaneousRepository = mock()
-    private val service = PublicServicesService(publicServicesRepository, miscRepository)
+    private val turtleService: TurtleService = mock()
+    private val service = PublicServicesService(turtleService)
 
     private val responseReader = TestResponseReader()
 
@@ -28,8 +22,8 @@ class PublicServicesServiceTest {
 
         @Test
         fun responseIsometricWithEmptyModelForEmptyDB() {
-            whenever(miscRepository.findById(UNION_ID))
-                .thenReturn(Optional.empty())
+            whenever(turtleService.getUnion())
+                .thenReturn(null)
 
             val expected = responseReader.parseResponse("", "TURTLE")
 
@@ -42,14 +36,9 @@ class PublicServicesServiceTest {
 
         @Test
         fun getAllHandlesTurtleAndOtherRDF() {
-            val allCatalogs = MiscellaneousTurtle(
-                id = UNION_ID,
-                isHarvestedSource = false,
-                turtle = gzip(javaClass.classLoader.getResource("all_services.ttl")!!.readText())
-            )
-
-            whenever(miscRepository.findById(UNION_ID))
-                .thenReturn(Optional.of(allCatalogs))
+            val allCatalogs = javaClass.classLoader.getResource("all_services.ttl")!!.readText()
+            whenever(turtleService.getUnion())
+                .thenReturn(allCatalogs)
 
             val expected = responseReader.parseFile("all_services.ttl", "TURTLE")
 
@@ -69,7 +58,7 @@ class PublicServicesServiceTest {
 
         @Test
         fun responseIsNullWhenNoModelIsFound() {
-            whenever(publicServicesRepository.findOneByFdkId("123"))
+            whenever(turtleService.getPublicService("123", true))
                 .thenReturn(null)
 
             val response = service.getServiceById("123", JenaType.TURTLE)
@@ -79,8 +68,8 @@ class PublicServicesServiceTest {
 
         @Test
         fun responseIsIsomorphicWithExpectedModel() {
-            whenever(publicServicesRepository.findOneByFdkId(SERVICE_ID_0))
-                .thenReturn(SERVICE_DBO_0)
+            whenever(turtleService.getPublicService(SERVICE_ID_0, true))
+                .thenReturn(javaClass.classLoader.getResource("service_0.ttl")!!.readText())
 
             val responseTurtle = service.getServiceById(SERVICE_ID_0, JenaType.TURTLE)
             val responseRDFXML = service.getServiceById(SERVICE_ID_0, JenaType.RDF_XML)

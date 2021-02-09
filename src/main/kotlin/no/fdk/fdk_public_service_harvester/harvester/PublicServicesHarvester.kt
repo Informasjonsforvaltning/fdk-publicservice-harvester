@@ -4,11 +4,12 @@ import no.fdk.fdk_public_service_harvester.adapter.FusekiAdapter
 import no.fdk.fdk_public_service_harvester.configuration.ApplicationProperties
 import no.fdk.fdk_public_service_harvester.adapter.ServicesAdapter
 import no.fdk.fdk_public_service_harvester.repository.PublicServicesRepository
-import no.fdk.fdk_public_service_harvester.repository.MiscellaneousRepository
+import no.fdk.fdk_public_service_harvester.repository.TurtleRepository
 import no.fdk.fdk_public_service_harvester.service.gzip
 import no.fdk.fdk_public_service_harvester.service.ungzip
 import no.fdk.fdk_public_service_harvester.model.*
 import no.fdk.fdk_public_service_harvester.rdf.*
+import no.fdk.fdk_public_service_harvester.service.TurtleService
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.sparql.vocabulary.FOAF
@@ -26,27 +27,21 @@ private val LOGGER = LoggerFactory.getLogger(PublicServicesHarvester::class.java
 class PublicServicesHarvester(
     private val adapter: ServicesAdapter,
     private val fusekiAdapter: FusekiAdapter,
-    private val publicServicesRepository: PublicServicesRepository,
-    private val miscRepository: MiscellaneousRepository,
+    private val metaRepository: PublicServicesRepository,
+    private val turtleService: TurtleService,
     private val applicationProperties: ApplicationProperties
 ) {
 
     fun updateUnionModel() {
         var unionModel = ModelFactory.createDefaultModel()
 
-        publicServicesRepository.findAll()
-            .map { parseRDFResponse(ungzip(it.turtleService), JenaType.TURTLE, null) }
+        metaRepository.findAll()
+            .mapNotNull { turtleService.getPublicService(it.fdkId, withRecords = true) }
+            .map { parseRDFResponse(it, JenaType.TURTLE, null) }
             .forEach { unionModel = unionModel.union(it) }
 
         fusekiAdapter.storeUnionModel(unionModel)
-
-        miscRepository.save(
-            MiscellaneousTurtle(
-                id = UNION_ID,
-                isHarvestedSource = false,
-                turtle = gzip(unionModel.createRDFResponse(JenaType.TURTLE))
-            )
-        )
+        turtleService.saveAsUnion(unionModel)
     }
 
     fun harvestServices(source: HarvestDataSource, harvestDate: Calendar) =
@@ -69,21 +64,15 @@ class PublicServicesHarvester(
         } else LOGGER.error("Harvest source is not defined")
 
     private fun checkHarvestedContainsChanges(harvested: Model, sourceURL: String, harvestDate: Calendar) {
-        val dbData = miscRepository
-            .findByIdOrNull(sourceURL)
-            ?.let { parseRDFResponse(ungzip(it.turtle), JenaType.TURTLE, null) }
+        val dbData = turtleService
+            .getHarvestSource(sourceURL)
+            ?.let { parseRDFResponse(it, JenaType.TURTLE, null) }
 
         if (dbData != null && harvested.isIsomorphicWith(dbData)) {
             LOGGER.info("No changes from last harvest of $sourceURL")
         } else {
             LOGGER.info("Changes detected, saving data from $sourceURL and updating FDK meta data")
-            miscRepository.save(
-                MiscellaneousTurtle(
-                    id = sourceURL,
-                    isHarvestedSource = true,
-                    turtle = gzip(harvested.createRDFResponse(JenaType.TURTLE))
-                )
-            )
+            turtleService.saveAsHarvestSource(harvested, sourceURL)
 
             val services = splitServicesFromRDF(harvested)
 
@@ -92,46 +81,50 @@ class PublicServicesHarvester(
         }
     }
 
-    private fun updateDB(services: List<PublicServiceRDFModel>, harvestDate: Calendar) {
-        val servicesToSave = mutableListOf<PublicServiceDBO>()
 
-        services
-            .map { Pair(it, publicServicesRepository.findByIdOrNull(it.resource.uri)) }
-            .filter { it.first.harvestDiff(it.second) }
+
+    private fun updateDB(events: List<PublicServiceRDFModel>, harvestDate: Calendar) {
+        events
+            .map { Pair(it, metaRepository.findByIdOrNull(it.resourceURI)) }
+            .filter { it.first.hasChanges(it.second?.fdkId) }
             .forEach {
-                val serviceURI = it.first.resource.uri
+                val updatedMeta = it.first.updateMeta(harvestDate, it.second)
+                metaRepository.save(updatedMeta)
 
-                val fdkId = it.second?.fdkId ?: createIdFromUri(serviceURI)
-                val fdkUri = "${applicationProperties.publicServiceHarvesterUri}/$fdkId"
+                turtleService.saveAsPublicService(it.first.harvested, updatedMeta.fdkId, false)
 
-                val issued = it.second?.issued
-                    ?.let { timestamp -> calendarFromTimestamp(timestamp) }
-                    ?: harvestDate
+                val fdkUri = "${applicationProperties.publicServiceHarvesterUri}/${updatedMeta.fdkId}"
 
                 val metaModel = ModelFactory.createDefaultModel()
-                metaModel.addMetaPrefixes()
-
                 metaModel.createResource(fdkUri)
                     .addProperty(RDF.type, DCAT.CatalogRecord)
-                    .addProperty(DCTerms.identifier, fdkId)
-                    .addProperty(FOAF.primaryTopic, metaModel.createResource(serviceURI))
-                    .addProperty(DCTerms.issued, metaModel.createTypedLiteral(issued))
+                    .addProperty(DCTerms.identifier, updatedMeta.fdkId)
+                    .addProperty(FOAF.primaryTopic, metaModel.createResource(updatedMeta.uri))
+                    .addProperty(DCTerms.issued, metaModel.createTypedLiteral(calendarFromTimestamp(updatedMeta.issued)))
                     .addProperty(DCTerms.modified, metaModel.createTypedLiteral(harvestDate))
 
-                val serviceModel = metaModel.union(it.first.harvested)
-
-                servicesToSave.add(
-                    PublicServiceDBO(
-                        uri = serviceURI,
-                        fdkId = fdkId,
-                        issued = issued.timeInMillis,
-                        modified = harvestDate.timeInMillis,
-                        turtleHarvested = gzip(it.first.harvested.createRDFResponse(JenaType.TURTLE)),
-                        turtleService = gzip(serviceModel.createRDFResponse(JenaType.TURTLE))
-                    )
-                )
+                turtleService.saveAsPublicService(metaModel.union(it.first.harvested), updatedMeta.fdkId, true)
             }
-
-        publicServicesRepository.saveAll(servicesToSave)
     }
+
+    private fun PublicServiceRDFModel.updateMeta(
+        harvestDate: Calendar,
+        dbMeta: PublicServiceMeta?
+    ): PublicServiceMeta {
+        val fdkId = dbMeta?.fdkId ?: createIdFromUri(resourceURI)
+        val issued = dbMeta?.issued
+            ?.let { timestamp -> calendarFromTimestamp(timestamp) }
+            ?: harvestDate
+
+        return PublicServiceMeta(
+            uri = resourceURI,
+            fdkId = fdkId,
+            issued = issued.timeInMillis,
+            modified = harvestDate.timeInMillis
+        )
+    }
+
+    private fun PublicServiceRDFModel.hasChanges(fdkId: String?): Boolean =
+        if (fdkId == null) true
+        else harvestDiff(turtleService.getPublicService(fdkId, withRecords = false))
 }
