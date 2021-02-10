@@ -4,6 +4,7 @@ import no.fdk.fdk_public_service_harvester.rdf.*
 import org.apache.jena.query.QueryExecutionFactory
 import org.apache.jena.query.QueryFactory
 import org.apache.jena.rdf.model.*
+import org.apache.jena.riot.Lang
 import org.apache.jena.sparql.vocabulary.FOAF
 import org.apache.jena.vocabulary.*
 import java.util.*
@@ -11,7 +12,7 @@ import java.util.*
 
 fun PublicServiceRDFModel.harvestDiff(dbTurtle: String?): Boolean =
     if (dbTurtle == null) true
-    else !harvested.isIsomorphicWith(parseRDFResponse(dbTurtle, JenaType.TURTLE, null))
+    else !harvested.isIsomorphicWith(parseRDFResponse(dbTurtle, Lang.TURTLE, null))
 
 fun splitServicesFromRDF(harvested: Model): List<PublicServiceRDFModel> =
     harvested.listResourcesWithProperty(RDF.type, CPSV.PublicService)
