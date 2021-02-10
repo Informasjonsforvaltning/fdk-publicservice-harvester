@@ -1,9 +1,9 @@
 package no.fdk.fdk_public_service_harvester.adapter
 
 import no.fdk.fdk_public_service_harvester.configuration.FusekiProperties
-import no.fdk.fdk_public_service_harvester.rdf.JenaType
 import no.fdk.fdk_public_service_harvester.rdf.createRDFResponse
 import org.apache.jena.rdf.model.Model
+import org.apache.jena.riot.Lang
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -24,7 +24,7 @@ class FusekiAdapter(private val fusekiProperties: FusekiProperties) {
                 doOutput = true
 
                 OutputStreamWriter(outputStream).use {
-                    it.write(model.createRDFResponse(JenaType.RDF_XML))
+                    it.write(model.createRDFResponse(Lang.RDFXML))
                     it.flush()
                 }
 

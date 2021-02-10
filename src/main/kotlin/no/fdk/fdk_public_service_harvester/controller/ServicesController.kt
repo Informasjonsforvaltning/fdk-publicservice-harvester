@@ -1,8 +1,8 @@
 package no.fdk.fdk_public_service_harvester.controller
 
-import no.fdk.fdk_public_service_harvester.rdf.JenaType
 import no.fdk.fdk_public_service_harvester.rdf.jenaTypeFromAcceptHeader
 import no.fdk.fdk_public_service_harvester.service.PublicServicesService
+import org.apache.jena.riot.Lang
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -23,9 +23,9 @@ open class ServicesController(private val publicServicesService: PublicServicesS
         LOGGER.info("get service with id $id")
         val returnType = jenaTypeFromAcceptHeader(httpServletRequest.getHeader("Accept"))
 
-        return if (returnType == JenaType.NOT_JENA) ResponseEntity(HttpStatus.NOT_ACCEPTABLE)
+        return if (returnType == Lang.RDFNULL) ResponseEntity(HttpStatus.NOT_ACCEPTABLE)
         else {
-            publicServicesService.getServiceById(id, returnType ?: JenaType.TURTLE)
+            publicServicesService.getServiceById(id, returnType ?: Lang.TURTLE)
                 ?.let { ResponseEntity(it, HttpStatus.OK) }
                 ?: ResponseEntity(HttpStatus.NOT_FOUND)
         }
@@ -36,8 +36,8 @@ open class ServicesController(private val publicServicesService: PublicServicesS
         LOGGER.info("get all services")
         val returnType = jenaTypeFromAcceptHeader(httpServletRequest.getHeader("Accept"))
 
-        return if (returnType == JenaType.NOT_JENA) ResponseEntity(HttpStatus.NOT_ACCEPTABLE)
-        else ResponseEntity(publicServicesService.getAll(returnType ?: JenaType.TURTLE), HttpStatus.OK)
+        return if (returnType == Lang.RDFNULL) ResponseEntity(HttpStatus.NOT_ACCEPTABLE)
+        else ResponseEntity(publicServicesService.getAll(returnType ?: Lang.TURTLE), HttpStatus.OK)
     }
 
 }

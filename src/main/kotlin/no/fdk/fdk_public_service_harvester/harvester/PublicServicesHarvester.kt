@@ -12,6 +12,7 @@ import no.fdk.fdk_public_service_harvester.rdf.*
 import no.fdk.fdk_public_service_harvester.service.TurtleService
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.rdf.model.ModelFactory
+import org.apache.jena.riot.Lang
 import org.apache.jena.sparql.vocabulary.FOAF
 import org.apache.jena.vocabulary.DCAT
 import org.apache.jena.vocabulary.DCTerms
@@ -37,7 +38,7 @@ class PublicServicesHarvester(
 
         metaRepository.findAll()
             .mapNotNull { turtleService.getPublicService(it.fdkId, withRecords = true) }
-            .map { parseRDFResponse(it, JenaType.TURTLE, null) }
+            .map { parseRDFResponse(it, Lang.TURTLE, null) }
             .forEach { unionModel = unionModel.union(it) }
 
         fusekiAdapter.storeUnionModel(unionModel)
@@ -51,13 +52,13 @@ class PublicServicesHarvester(
 
             val harvested = when (jenaWriterType) {
                 null -> null
-                JenaType.NOT_JENA -> null
+                Lang.RDFNULL -> null
                 else -> adapter.fetchServices(source)?.let { parseRDFResponse(it, jenaWriterType, source.url) }
             }
 
             when {
                 jenaWriterType == null -> LOGGER.error("Not able to harvest from ${source.url}, no accept header supplied")
-                jenaWriterType == JenaType.NOT_JENA -> LOGGER.error("Not able to harvest from ${source.url}, header ${source.acceptHeaderValue} is not acceptable ")
+                jenaWriterType == Lang.RDFNULL -> LOGGER.error("Not able to harvest from ${source.url}, header ${source.acceptHeaderValue} is not acceptable ")
                 harvested == null -> LOGGER.info("Not able to harvest ${source.url}")
                 else -> checkHarvestedContainsChanges(harvested, source.url, harvestDate)
             }
@@ -66,7 +67,7 @@ class PublicServicesHarvester(
     private fun checkHarvestedContainsChanges(harvested: Model, sourceURL: String, harvestDate: Calendar) {
         val dbData = turtleService
             .getHarvestSource(sourceURL)
-            ?.let { parseRDFResponse(it, JenaType.TURTLE, null) }
+            ?.let { parseRDFResponse(it, Lang.TURTLE, null) }
 
         if (dbData != null && harvested.isIsomorphicWith(dbData)) {
             LOGGER.info("No changes from last harvest of $sourceURL")
