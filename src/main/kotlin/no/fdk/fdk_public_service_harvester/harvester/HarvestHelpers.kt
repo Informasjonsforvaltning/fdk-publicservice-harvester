@@ -105,6 +105,8 @@ fun Model.addMetaPrefixes(): Model {
 private fun Model.resourceShouldBeAdded(resourceURI: String, types: List<RDFNode>): Boolean =
     when {
         types.contains(CPSV.PublicService) -> false
+        types.contains(CV.BusinessEvent) -> false
+        types.contains(CV.LifeEvent) -> false
         containsTriple("<${resourceURI}>", "a", "?o") -> false
         else -> true
     }
