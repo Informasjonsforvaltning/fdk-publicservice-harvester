@@ -18,7 +18,7 @@ private val LOGGER = LoggerFactory.getLogger(ServicesController::class.java)
 @RequestMapping(value = ["/public-services"], produces = ["text/turtle", "text/n3", "application/rdf+json", "application/ld+json", "application/rdf+xml", "application/n-triples"])
 open class ServicesController(private val publicServicesService: PublicServicesService) {
 
-    @GetMapping(value = ["/{id}"])
+    @GetMapping("/{id}")
     fun getServiceById(httpServletRequest: HttpServletRequest, @PathVariable id: String): ResponseEntity<String> {
         LOGGER.info("get service with id $id")
         val returnType = jenaTypeFromAcceptHeader(httpServletRequest.getHeader("Accept"))
@@ -31,7 +31,7 @@ open class ServicesController(private val publicServicesService: PublicServicesS
         }
     }
 
-    @GetMapping()
+    @GetMapping
     fun getServices(httpServletRequest: HttpServletRequest): ResponseEntity<String> {
         LOGGER.info("get all services")
         val returnType = jenaTypeFromAcceptHeader(httpServletRequest.getHeader("Accept"))

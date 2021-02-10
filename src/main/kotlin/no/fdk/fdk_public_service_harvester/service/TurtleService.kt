@@ -18,7 +18,7 @@ private const val NO_RECORDS_ID_PREFIX = "no-records-"
 const val UNION_ID = "services-union-graph"
 
 @Service
-class TurtleService (private val turtleRepository: TurtleRepository) {
+class TurtleService(private val turtleRepository: TurtleRepository) {
 
     fun saveAsUnion(model: Model) =
         turtleRepository.save(model.createUnionTurtleDBO())
