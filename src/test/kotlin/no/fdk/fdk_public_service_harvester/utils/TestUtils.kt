@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory
 import java.io.BufferedReader
 import java.net.URL
 import org.springframework.http.HttpStatus
+import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 
 private val logger = LoggerFactory.getLogger(ApiTestContext::class.java)
@@ -36,6 +37,40 @@ fun apiGet(endpoint: String, acceptHeader: String?, port: Int): Map<String,Any> 
                 "status" to connection.responseCode,
                 "header" to " ",
                 "body"   to " "
+            )
+        }
+    } catch (e: Exception) {
+        mapOf(
+            "status" to e.toString(),
+            "header" to " ",
+            "body"   to " "
+        )
+    }
+}
+
+fun apiAuthorizedPost(path: String, token: String?, port: Int): Map<String, Any> {
+    val connection  = URL("http://localhost:$port$path").openConnection() as HttpURLConnection
+    connection.requestMethod = "POST"
+
+    if(!token.isNullOrEmpty()) {
+        connection.setRequestProperty("Authorization", "Bearer $token")
+    }
+
+    return try {
+        connection.doOutput = true
+        connection.connect()
+
+        if(isOK(connection.responseCode)){
+            mapOf(
+                "body"   to connection.inputStream.bufferedReader().use(BufferedReader :: readText),
+                "header" to connection.headerFields.toString(),
+                "status" to connection.responseCode
+            )
+        } else {
+            mapOf(
+                "status" to connection.responseCode,
+                "header" to " ",
+                "body" to " "
             )
         }
     } catch (e: Exception) {

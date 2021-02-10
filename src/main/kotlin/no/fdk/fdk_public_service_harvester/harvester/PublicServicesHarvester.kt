@@ -1,12 +1,8 @@
 package no.fdk.fdk_public_service_harvester.harvester
 
-import no.fdk.fdk_public_service_harvester.adapter.FusekiAdapter
 import no.fdk.fdk_public_service_harvester.configuration.ApplicationProperties
 import no.fdk.fdk_public_service_harvester.adapter.ServicesAdapter
 import no.fdk.fdk_public_service_harvester.repository.PublicServicesRepository
-import no.fdk.fdk_public_service_harvester.repository.TurtleRepository
-import no.fdk.fdk_public_service_harvester.service.gzip
-import no.fdk.fdk_public_service_harvester.service.ungzip
 import no.fdk.fdk_public_service_harvester.model.*
 import no.fdk.fdk_public_service_harvester.rdf.*
 import no.fdk.fdk_public_service_harvester.service.TurtleService
@@ -27,23 +23,10 @@ private val LOGGER = LoggerFactory.getLogger(PublicServicesHarvester::class.java
 @Service
 class PublicServicesHarvester(
     private val adapter: ServicesAdapter,
-    private val fusekiAdapter: FusekiAdapter,
     private val metaRepository: PublicServicesRepository,
     private val turtleService: TurtleService,
     private val applicationProperties: ApplicationProperties
 ) {
-
-    fun updateUnionModel() {
-        var unionModel = ModelFactory.createDefaultModel()
-
-        metaRepository.findAll()
-            .mapNotNull { turtleService.getPublicService(it.fdkId, withRecords = true) }
-            .map { parseRDFResponse(it, Lang.TURTLE, null) }
-            .forEach { unionModel = unionModel.union(it) }
-
-        fusekiAdapter.storeUnionModel(unionModel)
-        turtleService.saveAsUnion(unionModel)
-    }
 
     fun harvestServices(source: HarvestDataSource, harvestDate: Calendar) =
         if (source.url != null) {

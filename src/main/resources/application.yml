@@ -13,6 +13,9 @@ spring:
     username: ${RABBIT_USERNAME}
     password: ${RABBIT_PASSWORD}
   data.mongodb.uri: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/publicServiceHarvester?authSource=admin&authMechanism=SCRAM-SHA-1
+  security.oauth2.resourceserver.jwt:
+    jwk-set-uri: ${SSO_HOST:https://sso.staging.fellesdatakatalog.digdir.no}/auth/realms/fdk/protocol/openid-connect/certs
+    issuer-uri: ${SSO_HOST:https://sso.staging.fellesdatakatalog.digdir.no}/auth/realms/fdk
 fuseki:
   unionGraphUri: ${FDK_SPARQL_SERVICE_URI:http://fdk-sparql-service:8080/fuseki}/harvested?graph=https://data.norge.no/api/public-services
 application:
@@ -37,6 +40,9 @@ application:
 ---
 spring:
   config.activate.on-profile: contract-test
+  security.oauth2.resourceserver.jwt:
+    jwk-set-uri: http://localhost:5000/auth/realms/fdk/protocol/openid-connect/certs
+    issuer-uri: http://localhost:5000/auth/realms/fdk
   rabbitmq:
     host: localhost
     port: 5000

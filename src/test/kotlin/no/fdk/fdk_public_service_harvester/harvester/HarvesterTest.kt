@@ -21,10 +21,9 @@ class HarvesterTest {
     private val metaRepository: PublicServicesRepository = mock()
     private val turtleService: TurtleService = mock()
     private val valuesMock: ApplicationProperties = mock()
-    private val fusekiAdapter: FusekiAdapter = mock()
     private val adapter: ServicesAdapter = mock()
 
-    private val harvester = PublicServicesHarvester(adapter, fusekiAdapter, metaRepository, turtleService, valuesMock)
+    private val harvester = PublicServicesHarvester(adapter, metaRepository, turtleService, valuesMock)
     private val responseReader = TestResponseReader()
 
     @Test

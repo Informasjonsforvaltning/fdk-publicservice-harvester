@@ -1,7 +1,7 @@
 openapi: 3.0.2
 info:
   title: FDK service harvester
-  description: Tilgjengeliggjør tjenester ihht DCAT-AP-NO
+  description: fdk-public-service-harvester will harvest catalogs of public services (CPSV) according to the DCAT-AP-NO v2 specification.
   version: '1.0'
   contact:
     name: Digitaliseringsdirektoratet
@@ -11,8 +11,8 @@ info:
     name: License of API
     url: 'http://data.norge.no/nlod/no/2.0'
 tags:
-  - name: dcat-ap-no-services
-    description: DCAT-AP-NO services
+  - name: cpsv-ap-no-services
+    description: CPSV-AP-NO services
 servers:
   - url: 'https://data.norge.no/public-services'
     description: Produksjonsmiljø
@@ -24,7 +24,7 @@ paths:
   /public-services:
     get:
       tags:
-        - dcat-ap-no-services
+        - cpsv-ap-no-services
       description: Returnerer en liste av tjenester
       operationId: getServices
       responses:
@@ -52,7 +52,7 @@ paths:
   '/public-services/{id}':
     get:
       tags:
-        - dcat-ap-no-services
+        - cpsv-ap-no-services
       description: Returnerer en tjeneste med gitt id
       operationId: getServiceById
       parameters:
@@ -86,3 +86,23 @@ paths:
                 type: string
         '404':
           description: Service with requested id does not exist
+  '/update/meta':
+    post:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - cpsv-ap-no-services
+      description: Updates stored catalog records with current meta data for services
+      operationId: updateMetaData
+      responses:
+        '204':
+          description: No Content
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - bearerAuth: [ ]

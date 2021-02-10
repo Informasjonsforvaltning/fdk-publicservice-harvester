@@ -3,6 +3,7 @@ package no.fdk.fdk_public_service_harvester.utils
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.*
+import no.fdk.fdk_public_service_harvester.utils.jwk.JwkStore
 import java.io.File
 
 private val mockserver = WireMockServer(LOCAL_SERVER_PORT)
@@ -20,9 +21,12 @@ fun startMockServer() {
             .willReturn(okJson(jacksonObjectMapper().writeValueAsString(listOf(TEST_HARVEST_SOURCE))))
         )
 
-        mockserver.stubFor(put(urlEqualTo("/fuseki/harvested?graph=https://public-services.fellesdatakatalog.digdir.no"))
+        mockserver.stubFor(put(urlEqualTo("/fuseki/harvested?graph=https://data.norge.no/api/public-services"))
             .willReturn(aResponse().withStatus(200))
         )
+
+        mockserver.stubFor(get(urlEqualTo("/auth/realms/fdk/protocol/openid-connect/certs"))
+            .willReturn(okJson(JwkStore.get())))
 
         mockserver.start()
     }
