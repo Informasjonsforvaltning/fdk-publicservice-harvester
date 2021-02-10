@@ -13,24 +13,26 @@ private val LOGGER = LoggerFactory.getLogger(ServicesAdapter::class.java)
 @Service
 class ServicesAdapter {
 
-    fun fetchServices(source: HarvestDataSource): String? =
-        try {
-            val connection = URL(source.url).openConnection() as HttpURLConnection
-            connection.setRequestProperty("Accept", source.acceptHeaderValue)
+    fun fetchServices(source: HarvestDataSource): String? {
+        with(URL(source.url).openConnection() as HttpURLConnection) {
+            try {
+                setRequestProperty("Accept", source.acceptHeaderValue)
 
-            if (connection.responseCode != HttpStatus.OK.value()) {
-                LOGGER.error("${source.url} responded with ${connection.responseCode}, harvest will be aborted")
-                null
-            } else {
-                connection
-                    .inputStream
-                    .bufferedReader()
-                    .use(BufferedReader::readText)
+                return if (responseCode != HttpStatus.OK.value()) {
+                    LOGGER.error("${source.url} responded with ${responseCode}, harvest will be aborted")
+                    null
+                } else {
+                    inputStream.bufferedReader()
+                        .use(BufferedReader::readText)
+                }
+
+            } catch (ex: Exception) {
+                LOGGER.error("Error when harvesting from ${source.url}", ex)
+                return null
+            } finally {
+                disconnect()
             }
 
-        } catch (ex: Exception) {
-            LOGGER.error("Error when harvesting from ${source.url}", ex)
-            null
         }
-
+    }
 }

@@ -16,9 +16,9 @@ private val LOGGER = LoggerFactory.getLogger(FusekiAdapter::class.java)
 @Service
 class FusekiAdapter(private val fusekiProperties: FusekiProperties) {
 
-    fun storeUnionModel(model: Model) =
-        try {
-            with(URL(fusekiProperties.unionGraphUri).openConnection() as HttpURLConnection) {
+    fun storeUnionModel(model: Model) {
+        with(URL(fusekiProperties.unionGraphUri).openConnection() as HttpURLConnection) {
+            try {
                 setRequestProperty("Content-type", "application/rdf+xml")
                 requestMethod = "PUT"
                 doOutput = true
@@ -33,9 +33,11 @@ class FusekiAdapter(private val fusekiProperties: FusekiProperties) {
                 } else {
                     LOGGER.error("Save to fuseki failed, status: $responseCode")
                 }
+            } catch (ex: Exception) {
+                LOGGER.error("Error when saving to fuseki", ex)
+            } finally {
+                disconnect()
             }
-        } catch (ex: Exception) {
-            LOGGER.error("Error when saving to fuseki", ex)
         }
-
+    }
 }
