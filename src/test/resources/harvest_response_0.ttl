@@ -28,7 +28,7 @@
   cv:isGroupedBy <http://public-service-publisher.fellesdatakatalog.digdir.no/events/1> ;
 .
 
-<http://public-service-publisher.fellesdatakatalog.digdir.no/events/1> a cv:Event ;
+<http://public-service-publisher.fellesdatakatalog.digdir.no/events/1> a cv:BusinessEvent ;
   dct:identifier "1" ;
   dct:title "Starte og drive restaurant"@nb ;
   dct:description "Elektronisk prosess for etablering og oppstart av restaurantdrift."@nb ;
