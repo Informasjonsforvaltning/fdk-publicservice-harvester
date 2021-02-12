@@ -13,6 +13,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+    # Setup java jdk
+    - uses: actions/setup-java@v1
+      with:
+        java-version: '15'
+        java-package: jdk
+        architecture: x64
+
       # Setup gcloud CLI
       - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:

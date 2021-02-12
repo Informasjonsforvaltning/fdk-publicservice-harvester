@@ -8,7 +8,7 @@
     <groupId>no.fdk</groupId>
     <artifactId>fdk-public-service-harvester</artifactId>
     <name>FDK Service Harvester</name>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <parent>
@@ -20,7 +20,7 @@
 
     <properties>
         <!--standard properties-->
-        <java.release>1.8</java.release>
+        <java.release>15</java.release>
         <java.encoding>UTF-8</java.encoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
