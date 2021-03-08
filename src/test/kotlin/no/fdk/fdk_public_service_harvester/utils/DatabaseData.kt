@@ -66,13 +66,18 @@ val HARVESTED_DBO = TurtleDBO(
 )
 
 val UNION_DATA = TurtleDBO(
-    id = UNION_ID,
+    id = turtleId(UNION_ID, withRecords = true),
     turtle = gzip(responseReader.readFile("all_services.ttl"))
+)
+
+val UNION_DATA_NO_META = TurtleDBO(
+    id = turtleId(UNION_ID, withRecords = false),
+    turtle = gzip(responseReader.readFile("no_meta_all_services.ttl"))
 )
 
 fun turleDBPopulation(): List<Document> =
     listOf(UNION_DATA, HARVESTED_DBO, SERVICE_TURTLE_0_META, SERVICE_TURTLE_0_NO_META, SERVICE_TURTLE_1_META,
-        SERVICE_TURTLE_1_NO_META, SERVICE_TURTLE_2_META, SERVICE_TURTLE_2_NO_META)
+        SERVICE_TURTLE_1_NO_META, SERVICE_TURTLE_2_META, SERVICE_TURTLE_2_NO_META, UNION_DATA_NO_META)
         .map { it.mapDBO() }
 
 fun metaDBPopulation(): List<Document> =

@@ -27,6 +27,14 @@ paths:
         - cpsv-ap-no-services
       description: Returnerer en liste av tjenester
       operationId: getServices
+      parameters:
+        - name: catalogrecords
+          in: query
+          description: Include FDK catalog records
+          required: false
+          schema:
+            type: boolean
+            default: false
       responses:
         '200':
           description: OK
@@ -62,6 +70,13 @@ paths:
           required: true
           schema:
             type: string
+        - name: catalogrecords
+          in: query
+          description: Include FDK catalog records
+          required: false
+          schema:
+            type: boolean
+            default: false
       responses:
         '200':
           description: OK

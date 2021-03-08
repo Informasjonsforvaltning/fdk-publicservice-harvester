@@ -28,17 +28,22 @@ class UpdateService (
 
     fun updateUnionModel() {
         var unionModel = ModelFactory.createDefaultModel()
+        var unionModelNoRecords = ModelFactory.createDefaultModel()
 
         metaRepository.findAll()
             .forEach {
                 turtleService.getPublicService(it.fdkId, withRecords = true)
                     ?.let { dboTurtle -> parseRDFResponse(dboTurtle, Lang.TURTLE, null) }
                     ?.run { unionModel = unionModel.union(this) }
+
+                turtleService.getPublicService(it.fdkId, withRecords = false)
+                    ?.let { dboTurtle -> parseRDFResponse(dboTurtle, Lang.TURTLE, null) }
+                    ?.run { unionModelNoRecords = unionModelNoRecords.union(this) }
             }
 
         fusekiAdapter.storeUnionModel(unionModel)
-
-        turtleService.saveAsUnion(unionModel)
+        turtleService.saveAsUnion(unionModel, true)
+        turtleService.saveAsUnion(unionModelNoRecords, false)
     }
 
     fun updateMetaData() {

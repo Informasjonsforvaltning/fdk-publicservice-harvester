@@ -22,13 +22,13 @@ class PublicServicesServiceTest {
 
         @Test
         fun responseIsometricWithEmptyModelForEmptyDB() {
-            whenever(turtleService.getUnion())
+            whenever(turtleService.getUnion(true))
                 .thenReturn(null)
 
             val expected = responseReader.parseResponse("", "TURTLE")
 
-            val responseTurtle = service.getAll(Lang.TURTLE)
-            val responseJsonLD = service.getAll(Lang.JSONLD)
+            val responseTurtle = service.getAll(Lang.TURTLE, true)
+            val responseJsonLD = service.getAll(Lang.JSONLD, true)
 
             assertTrue(expected.isIsomorphicWith(responseReader.parseResponse(responseTurtle, "TURTLE")))
             assertTrue(expected.isIsomorphicWith(responseReader.parseResponse(responseJsonLD, "JSON-LD")))
@@ -36,17 +36,19 @@ class PublicServicesServiceTest {
 
         @Test
         fun getAllHandlesTurtleAndOtherRDF() {
-            val allCatalogs = javaClass.classLoader.getResource("all_services.ttl")!!.readText()
-            whenever(turtleService.getUnion())
-                .thenReturn(allCatalogs)
+            whenever(turtleService.getUnion(true))
+                .thenReturn(javaClass.classLoader.getResource("all_services.ttl")!!.readText())
+            whenever(turtleService.getUnion(false))
+                .thenReturn(javaClass.classLoader.getResource("no_meta_all_services.ttl")!!.readText())
 
             val expected = responseReader.parseFile("all_services.ttl", "TURTLE")
+            val expectedNoRecords = responseReader.parseFile("no_meta_all_services.ttl", "TURTLE")
 
-            val responseTurtle = service.getAll(Lang.TURTLE)
-            val responseN3 = service.getAll(Lang.N3)
-            val responseNTriples = service.getAll(Lang.NTRIPLES)
+            val responseTurtle = service.getAll(Lang.TURTLE, false)
+            val responseN3 = service.getAll(Lang.N3, true)
+            val responseNTriples = service.getAll(Lang.NTRIPLES, true)
 
-            assertTrue(expected.isIsomorphicWith(responseReader.parseResponse(responseTurtle, "TURTLE")))
+            assertTrue(expectedNoRecords.isIsomorphicWith(responseReader.parseResponse(responseTurtle, "TURTLE")))
             assertTrue(expected.isIsomorphicWith(responseReader.parseResponse(responseN3, "N3")))
             assertTrue(expected.isIsomorphicWith(responseReader.parseResponse(responseNTriples, "N-TRIPLES")))
         }
@@ -61,7 +63,7 @@ class PublicServicesServiceTest {
             whenever(turtleService.getPublicService("123", true))
                 .thenReturn(null)
 
-            val response = service.getServiceById("123", Lang.TURTLE)
+            val response = service.getServiceById("123", Lang.TURTLE, true)
 
             assertNull(response)
         }
@@ -70,14 +72,17 @@ class PublicServicesServiceTest {
         fun responseIsIsomorphicWithExpectedModel() {
             whenever(turtleService.getPublicService(SERVICE_ID_0, true))
                 .thenReturn(javaClass.classLoader.getResource("service_0.ttl")!!.readText())
+            whenever(turtleService.getPublicService(SERVICE_ID_0, false))
+                .thenReturn(javaClass.classLoader.getResource("no_meta_service_0.ttl")!!.readText())
 
-            val responseTurtle = service.getServiceById(SERVICE_ID_0, Lang.TURTLE)
-            val responseRDFXML = service.getServiceById(SERVICE_ID_0, Lang.RDFXML)
+            val responseTurtle = service.getServiceById(SERVICE_ID_0, Lang.TURTLE, true)
+            val responseRDFXML = service.getServiceById(SERVICE_ID_0, Lang.RDFXML, false)
 
             val expected = responseReader.parseFile("service_0.ttl", "TURTLE")
+            val expectedNoRecords = responseReader.parseFile("no_meta_service_0.ttl", "TURTLE")
 
             assertTrue(expected.isIsomorphicWith(responseReader.parseResponse(responseTurtle!!, "TURTLE")))
-            assertTrue(expected.isIsomorphicWith(responseReader.parseResponse(responseRDFXML!!, "RDF/XML")))
+            assertTrue(expectedNoRecords.isIsomorphicWith(responseReader.parseResponse(responseRDFXML!!, "RDF/XML")))
         }
 
     }
