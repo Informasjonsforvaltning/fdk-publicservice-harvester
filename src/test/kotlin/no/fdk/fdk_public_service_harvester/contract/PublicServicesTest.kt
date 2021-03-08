@@ -22,8 +22,8 @@ class PublicServicesTest: ApiTestContext() {
     private val responseReader = TestResponseReader()
 
     @Test
-    fun findAll() {
-        val response = apiGet("/public-services", "text/turtle", port)
+    fun findAllWithRecords() {
+        val response = apiGet("/public-services?catalogrecords=true", "text/turtle", port)
         Assumptions.assumeTrue(HttpStatus.OK.value() == response["status"])
 
         val expected = responseReader.parseFile("all_services.ttl", "TURTLE")
@@ -33,11 +33,33 @@ class PublicServicesTest: ApiTestContext() {
     }
 
     @Test
-    fun findSpecific() {
-        val response = apiGet("/public-services/$SERVICE_ID_0", "application/rdf+json", port)
+    fun findAllNoRecords() {
+        val response = apiGet("/public-services", "text/turtle", port)
+        Assumptions.assumeTrue(HttpStatus.OK.value() == response["status"])
+
+        val expected = responseReader.parseFile("no_meta_all_services.ttl", "TURTLE")
+        val responseModel = responseReader.parseResponse(response["body"] as String, "TURTLE")
+
+        assertTrue(checkIfIsomorphicAndPrintDiff(actual = responseModel, expected = expected, name = "ServicesTest.findAll"))
+    }
+
+    @Test
+    fun findSpecificWithRecords() {
+        val response = apiGet("/public-services/$SERVICE_ID_0?catalogrecords=true", "application/rdf+json", port)
         Assumptions.assumeTrue(HttpStatus.OK.value() == response["status"])
 
         val expected = responseReader.parseFile("service_0.ttl", "TURTLE")
+        val responseModel = responseReader.parseResponse(response["body"] as String, "RDF/JSON")
+
+        assertTrue(checkIfIsomorphicAndPrintDiff(actual = responseModel, expected = expected, name = "ServicesTest.findSpecific"))
+    }
+
+    @Test
+    fun findSpecificNoRecords() {
+        val response = apiGet("/public-services/$SERVICE_ID_0", "application/rdf+json", port)
+        Assumptions.assumeTrue(HttpStatus.OK.value() == response["status"])
+
+        val expected = responseReader.parseFile("no_meta_service_0.ttl", "TURTLE")
         val responseModel = responseReader.parseResponse(response["body"] as String, "RDF/JSON")
 
         assertTrue(checkIfIsomorphicAndPrintDiff(actual = responseModel, expected = expected, name = "ServicesTest.findSpecific"))

@@ -59,6 +59,7 @@ class UpdateServiceTest {
         fun updateUnionModel() {
             whenever(metaRepository.findAll())
                 .thenReturn(listOf(SERVICE_META_0, SERVICE_META_1, SERVICE_META_2))
+
             whenever(turtleService.getPublicService(SERVICE_ID_0, true))
                 .thenReturn(responseReader.readFile("service_0.ttl"))
             whenever(turtleService.getPublicService(SERVICE_ID_1, true))
@@ -66,18 +67,28 @@ class UpdateServiceTest {
             whenever(turtleService.getPublicService(SERVICE_ID_2, true))
                 .thenReturn(responseReader.readFile("service_2.ttl"))
 
+            whenever(turtleService.getPublicService(SERVICE_ID_0, false))
+                .thenReturn(responseReader.readFile("no_meta_service_0.ttl"))
+            whenever(turtleService.getPublicService(SERVICE_ID_1, false))
+                .thenReturn(responseReader.readFile("no_meta_service_1.ttl"))
+            whenever(turtleService.getPublicService(SERVICE_ID_2, false))
+                .thenReturn(responseReader.readFile("no_meta_service_2.ttl"))
+
             updateService.updateUnionModel()
 
             val expected = responseReader.parseFile("all_services.ttl", "TURTLE")
+            val expectedNoRecords = responseReader.parseFile("no_meta_all_services.ttl", "TURTLE")
 
             argumentCaptor<Model>().apply {
                 verify(fusekiAdapter, times(1)).storeUnionModel(capture())
                 assertTrue(checkIfIsomorphicAndPrintDiff(firstValue, expected, "updateUnionModel-fuseki"))
             }
 
-            argumentCaptor<Model>().apply {
-                verify(turtleService, times(1)).saveAsUnion(capture())
-                assertTrue(checkIfIsomorphicAndPrintDiff(firstValue, expected, "updateUnionModel-mongo"))
+            argumentCaptor<Model, Boolean>().apply {
+                verify(turtleService, times(2)).saveAsUnion(first.capture(), second.capture())
+                assertTrue(checkIfIsomorphicAndPrintDiff(first.firstValue, expected, "updateUnionModel-withrecords"))
+                assertTrue(checkIfIsomorphicAndPrintDiff(first.secondValue, expectedNoRecords, "updateUnionModel-norecords"))
+                assertEquals(listOf(true, false), second.allValues)
             }
         }
     }
