@@ -1,6 +1,5 @@
 package no.fdk.fdk_public_service_harvester.service
 
-import no.fdk.fdk_public_service_harvester.adapter.FusekiAdapter
 import no.fdk.fdk_public_service_harvester.configuration.ApplicationProperties
 import no.fdk.fdk_public_service_harvester.harvester.calendarFromTimestamp
 import no.fdk.fdk_public_service_harvester.model.*
@@ -21,7 +20,6 @@ private val LOGGER = LoggerFactory.getLogger(UpdateService::class.java)
 @Service
 class UpdateService (
     private val applicationProperties: ApplicationProperties,
-    private val fusekiAdapter: FusekiAdapter,
     private val metaRepository: PublicServicesRepository,
     private val turtleService: TurtleService
 ) {
@@ -41,7 +39,6 @@ class UpdateService (
                     ?.run { unionModelNoRecords = unionModelNoRecords.union(this) }
             }
 
-        fusekiAdapter.storeUnionModel(unionModel)
         turtleService.saveAsUnion(unionModel, true)
         turtleService.saveAsUnion(unionModelNoRecords, false)
     }

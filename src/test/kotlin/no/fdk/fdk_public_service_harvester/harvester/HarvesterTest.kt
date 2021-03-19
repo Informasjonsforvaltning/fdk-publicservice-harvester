@@ -1,7 +1,6 @@
 package no.fdk.fdk_public_service_harvester.harvester
 
 import com.nhaarman.mockitokotlin2.*
-import no.fdk.fdk_public_service_harvester.adapter.FusekiAdapter
 import no.fdk.fdk_public_service_harvester.adapter.ServicesAdapter
 import no.fdk.fdk_public_service_harvester.configuration.ApplicationProperties
 import no.fdk.fdk_public_service_harvester.model.PublicServiceMeta
