@@ -16,10 +16,6 @@ tags:
 servers:
   - url: 'https://data.norge.no/public-services'
     description: Produksjonsmiljø
-  - url: 'https://staging.fellesdatakatalog.digdir.no/public-services'
-    description: Testmiljø
-  - url: 'https://demo.fellesdatakatalog.digdir.no/public-services'
-    description: Demomiljø
 paths:
   /public-services:
     get:
