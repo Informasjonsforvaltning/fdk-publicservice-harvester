@@ -16,8 +16,6 @@ spring:
   security.oauth2.resourceserver.jwt:
     jwk-set-uri: ${SSO_HOST:https://sso.staging.fellesdatakatalog.digdir.no}/auth/realms/fdk/protocol/openid-connect/certs
     issuer-uri: ${SSO_HOST:https://sso.staging.fellesdatakatalog.digdir.no}/auth/realms/fdk
-fuseki:
-  unionGraphUri: ${FDK_SPARQL_SERVICE_URI:http://fdk-sparql-service:8080/fuseki}/harvested?graph=https://data.norge.no/api/public-services
 application:
   publicServiceHarvesterUri: ${FDK_BASE_URI:https://staging.fellesdatakatalog.digdir.no}/public-services
   harvestAdminRootUrl: ${HARVEST_ADMIN_ROOT_URL:http://fdk-harvest-admin:8080/api}
@@ -31,8 +29,6 @@ spring:
     username: admin
     password: admin
   data.mongodb.uri: mongodb://admin:admin@localhost:27017/publicServiceHarvester?authSource=admin&authMechanism=SCRAM-SHA-1
-fuseki:
-  unionGraphUri: http://localhost:3030/fuseki/harvested?graph=https://data.norge.no/api/public-services
 application:
   publicServiceHarvesterUri: https://staging.fellesdatakatalog.digdir.no/public-services
   harvestAdminRootUrl: https://admin-api.staging.fellesdatakatalog.digdir.no/api
@@ -51,4 +47,3 @@ spring:
 application:
   publicServiceHarvesterUri: http://localhost:5000/public-services
   harvestAdminRootUrl: http://localhost:5000/api
-fuseki.unionGraphUri: http://localhost:5000/fuseki/harvested?graph=https://data.norge.no/api/public-services
