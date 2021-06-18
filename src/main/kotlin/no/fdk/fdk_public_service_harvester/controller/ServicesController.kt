@@ -18,7 +18,8 @@ private val LOGGER = LoggerFactory.getLogger(ServicesController::class.java)
 @Controller
 @RequestMapping(
     value = ["/public-services"],
-    produces = ["text/turtle", "text/n3", "application/rdf+json", "application/ld+json", "application/rdf+xml", "application/n-triples"]
+    produces = ["text/turtle", "text/n3", "application/rdf+json", "application/ld+json", "application/rdf+xml",
+        "application/n-triples", "application/n-quads", "application/trig", "application/trix"]
 )
 open class ServicesController(private val publicServicesService: PublicServicesService) {
 
