@@ -1,6 +1,7 @@
 package no.fdk.fdk_public_service_harvester.contract
 
 import no.fdk.fdk_public_service_harvester.utils.*
+import org.apache.jena.riot.Lang
 import org.junit.jupiter.api.*
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.web.server.LocalServerPort
@@ -34,11 +35,11 @@ class PublicServicesTest: ApiTestContext() {
 
     @Test
     fun findAllNoRecords() {
-        val response = apiGet("/public-services", "text/turtle", port)
+        val response = apiGet("/public-services", "application/trig", port)
         Assumptions.assumeTrue(HttpStatus.OK.value() == response["status"])
 
         val expected = responseReader.parseFile("no_meta_all_services.ttl", "TURTLE")
-        val responseModel = responseReader.parseResponse(response["body"] as String, "TURTLE")
+        val responseModel = responseReader.parseResponse(response["body"] as String, Lang.TRIG.name)
 
         assertTrue(checkIfIsomorphicAndPrintDiff(actual = responseModel, expected = expected, name = "ServicesTest.findAll"))
     }
@@ -56,11 +57,11 @@ class PublicServicesTest: ApiTestContext() {
 
     @Test
     fun findSpecificNoRecords() {
-        val response = apiGet("/public-services/$SERVICE_ID_0", "application/rdf+json", port)
+        val response = apiGet("/public-services/$SERVICE_ID_0", "application/n-quads", port)
         Assumptions.assumeTrue(HttpStatus.OK.value() == response["status"])
 
         val expected = responseReader.parseFile("no_meta_service_0.ttl", "TURTLE")
-        val responseModel = responseReader.parseResponse(response["body"] as String, "RDF/JSON")
+        val responseModel = responseReader.parseResponse(response["body"] as String, Lang.NQUADS.name)
 
         assertTrue(checkIfIsomorphicAndPrintDiff(actual = responseModel, expected = expected, name = "ServicesTest.findSpecific"))
     }
