@@ -40,12 +40,12 @@ class PublicServicesHarvester(
             }
 
             when {
-                jenaWriterType == null -> LOGGER.error("Not able to harvest from ${source.url}, no accept header supplied")
-                jenaWriterType == Lang.RDFNULL -> LOGGER.error("Not able to harvest from ${source.url}, header ${source.acceptHeaderValue} is not acceptable ")
+                jenaWriterType == null -> LOGGER.error(Exception("Not able to harvest from ${source.url}, no accept header supplied").stackTraceToString())
+                jenaWriterType == Lang.RDFNULL -> LOGGER.error(Exception("Not able to harvest from ${source.url}, header ${source.acceptHeaderValue} is not acceptable").stackTraceToString())
                 harvested == null -> LOGGER.info("Not able to harvest ${source.url}")
                 else -> checkHarvestedContainsChanges(harvested, source.url, harvestDate)
             }
-        } else LOGGER.error("Harvest source is not defined")
+        } else LOGGER.error(Exception("Harvest source is not defined").stackTraceToString())
 
     private fun checkHarvestedContainsChanges(harvested: Model, sourceURL: String, harvestDate: Calendar) {
         val dbData = turtleService
@@ -60,7 +60,7 @@ class PublicServicesHarvester(
 
             val services = splitServicesFromRDF(harvested)
 
-            if (services.isEmpty()) LOGGER.error("No public services found in data harvested from $sourceURL")
+            if (services.isEmpty()) LOGGER.error(Exception("No public services found in data harvested from $sourceURL").stackTraceToString())
             else updateDB(services, harvestDate)
         }
     }
