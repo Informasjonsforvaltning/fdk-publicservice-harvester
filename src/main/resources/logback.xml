@@ -19,9 +19,11 @@
                 <logLevel>
                     <fieldName>severity</fieldName>
                 </logLevel>
-                <message/>
+                <message>
+                    <fieldName>shortMessage</fieldName>
+                </message>
                 <pattern>
-                    <pattern>{ "serviceContext": { "service": "fdk-public-service-harvester" } }</pattern>
+                    <pattern>{ "message": "%exception%message", "serviceContext": { "service": "fdk-public-service-harvester" } }</pattern>
                 </pattern>
             </providers>
         </encoder>

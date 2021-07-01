@@ -1,5 +1,6 @@
 package no.fdk.fdk_public_service_harvester.adapter
 
+import no.fdk.fdk_public_service_harvester.harvester.HarvestException
 import no.fdk.fdk_public_service_harvester.model.HarvestDataSource
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -19,7 +20,7 @@ class ServicesAdapter {
                 setRequestProperty("Accept", source.acceptHeaderValue)
 
                 return if (responseCode != HttpStatus.OK.value()) {
-                    LOGGER.error(Exception("${source.url} responded with ${responseCode}, harvest will be aborted").stackTraceToString())
+                    LOGGER.error("${source.url} responded with ${responseCode}, harvest will be aborted", HarvestException(source.url ?: "undefined"))
                     null
                 } else {
                     inputStream.bufferedReader()
@@ -27,7 +28,7 @@ class ServicesAdapter {
                 }
 
             } catch (ex: Exception) {
-                LOGGER.error("${ex.stackTraceToString()}: Error when harvesting from ${source.url}")
+                LOGGER.error("Error when harvesting from ${source.url}", ex)
                 return null
             } finally {
                 disconnect()
