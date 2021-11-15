@@ -9,7 +9,6 @@
     <artifactId>fdk-public-service-harvester</artifactId>
     <name>FDK Service Harvester</name>
     <version>1.0.0</version>
-    <packaging>jar</packaging>
 
     <parent>
       <groupId>org.springframework.boot</groupId>
@@ -32,8 +31,6 @@
         <kotlin.version>1.5.30</kotlin.version>
         <testcontainers.version>1.16.0</testcontainers.version>
         <jena.version>4.1.0</jena.version>
-
-        <start-class>no.fdk.fdk_public_service_harvester.Application</start-class>
     </properties>
 
     <dependencies>
