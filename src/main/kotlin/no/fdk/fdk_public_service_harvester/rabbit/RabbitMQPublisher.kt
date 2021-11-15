@@ -17,6 +17,7 @@ class RabbitMQPublisher(private val template: RabbitTemplate) {
                 "public_services.harvester.UpdateSearchTrigger",
                 UpdateSearchMessage(dbId)
             )
+            template.convertAndSend("harvests", "public_services.harvested", UpdateSearchMessage(dbId))
             LOGGER.debug("Successfully sent UpdateSearchTrigger for $dbId")
         } catch (e: AmqpException) {
             LOGGER.error("Could not trigger search update", e)
