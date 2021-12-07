@@ -24,6 +24,7 @@ fun splitServicesFromRDF(harvested: Model): List<PublicServiceRDFModel> =
 
             resource.listProperties().toList()
                 .filter { it.isResourceProperty() }
+                .filter { it.resource.isURIResource }
                 .forEach {
                     model = model.recursiveAddNonPublicServiceResources(it.resource, 10)
                 }
@@ -63,7 +64,7 @@ private fun Model.recursiveAddNonPublicServiceResources(resource: Resource, recu
         .toList()
         .map { it.`object` }
 
-    if (resourceShouldBeAdded(resource.uri, types)) {
+    if (resourceShouldBeAdded(resource, types)) {
         add(resource.listProperties())
 
         if (newCount > 0) {
@@ -93,21 +94,13 @@ data class PublicServiceRDFModel (
     val harvested: Model
 )
 
-fun Model.addMetaPrefixes(): Model {
-    setNsPrefix("dct", DCTerms.NS)
-    setNsPrefix("dcat", DCAT.NS)
-    setNsPrefix("foaf", FOAF.getURI())
-    setNsPrefix("xsd", XSD.NS)
-
-    return this
-}
-
-private fun Model.resourceShouldBeAdded(resourceURI: String, types: List<RDFNode>): Boolean =
+private fun Model.resourceShouldBeAdded(resource: Resource, types: List<RDFNode>): Boolean =
     when {
         types.contains(CPSV.PublicService) -> false
         types.contains(CV.BusinessEvent) -> false
         types.contains(CV.LifeEvent) -> false
-        containsTriple("<${resourceURI}>", "a", "?o") -> false
+        !resource.isURIResource -> true
+        containsTriple("<${resource.uri}>", "a", "?o") -> false
         else -> true
     }
 
