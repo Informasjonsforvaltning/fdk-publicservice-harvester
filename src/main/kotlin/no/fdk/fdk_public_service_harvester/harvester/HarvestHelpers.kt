@@ -24,7 +24,6 @@ fun splitServicesFromRDF(harvested: Model): List<PublicServiceRDFModel> =
 
             resource.listProperties().toList()
                 .filter { it.isResourceProperty() }
-                .filter { it.resource.isURIResource }
                 .forEach {
                     model = model.recursiveAddNonPublicServiceResources(it.resource, 10)
                 }
