@@ -1,5 +1,6 @@
 package no.fdk.fdk_public_service_harvester.harvester
 
+import no.fdk.fdk_public_service_harvester.Application
 import no.fdk.fdk_public_service_harvester.rdf.*
 import org.apache.jena.query.QueryExecutionFactory
 import org.apache.jena.query.QueryFactory
@@ -7,16 +8,19 @@ import org.apache.jena.rdf.model.*
 import org.apache.jena.riot.Lang
 import org.apache.jena.sparql.vocabulary.FOAF
 import org.apache.jena.vocabulary.*
+import org.slf4j.LoggerFactory
 import java.util.*
 
+private val LOGGER = LoggerFactory.getLogger(Application::class.java)
 
 fun PublicServiceRDFModel.harvestDiff(dbTurtle: String?): Boolean =
     if (dbTurtle == null) true
     else !harvested.isIsomorphicWith(parseRDFResponse(dbTurtle, Lang.TURTLE, null))
 
-fun splitServicesFromRDF(harvested: Model): List<PublicServiceRDFModel> =
+fun splitServicesFromRDF(harvested: Model, sourceURL: String): List<PublicServiceRDFModel> =
     harvested.listResourcesWithProperty(RDF.type, CPSV.PublicService)
         .toList()
+        .filterBlankNodeServices(sourceURL)
         .map { resource ->
 
             var model = resource.listProperties().toModel()
@@ -33,6 +37,18 @@ fun splitServicesFromRDF(harvested: Model): List<PublicServiceRDFModel> =
                 harvested = model
             )
         }
+
+private fun List<Resource>.filterBlankNodeServices(sourceURL: String): List<Resource> =
+    filter {
+        if (it.isURIResource) true
+        else {
+            LOGGER.error(
+                "Failed harvest of service for $sourceURL, unable to harvest blank node services",
+                Exception("unable to harvest blank node services")
+            )
+            false
+        }
+    }
 
 private fun Statement.isResourceProperty(): Boolean =
     try {

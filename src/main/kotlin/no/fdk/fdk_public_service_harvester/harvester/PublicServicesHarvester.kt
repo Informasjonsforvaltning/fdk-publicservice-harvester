@@ -58,7 +58,7 @@ class PublicServicesHarvester(
             LOGGER.info("Changes detected, saving data from $sourceURL and updating FDK meta data")
             turtleService.saveAsHarvestSource(harvested, sourceURL)
 
-            val services = splitServicesFromRDF(harvested)
+            val services = splitServicesFromRDF(harvested, sourceURL)
 
             if (services.isEmpty()) LOGGER.error("No public services found in data harvested from $sourceURL", HarvestException(sourceURL))
             else updateDB(services, harvestDate)
