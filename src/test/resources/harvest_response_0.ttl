@@ -19,6 +19,11 @@
   cv:hasCompetentAuthority <https://organization-catalogue.fellesdatakatalog.digdir.no/organizations/964983291> ;
 .
 
+[ a cpsv:PublicService ;
+  dct:identifier "filtered" ;
+  dct:title "Filtered PublicService"@en
+] .
+
 <http://public-service-publisher.fellesdatakatalog.digdir.no/services/3> a cpsv:PublicService ;
   dct:identifier "3" ;
   dct:title "Ny næringsmiddelvirksomhet inkl. matkontaktmaterialer"@nb ;
