@@ -19,7 +19,20 @@ spring:
 application:
   publicServiceHarvesterUri: ${FDK_BASE_URI:https://staging.fellesdatakatalog.digdir.no}/public-services
   harvestAdminRootUrl: ${HARVEST_ADMIN_ROOT_URL:http://fdk-harvest-admin:8080/api}
-
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+  metrics:
+    export:
+      statsd:
+        enabled: true
+        flavor: telegraf
+        host: fdk-monitoring-services-telegraf
+        port: 8125
+    tags:
+      application: fdk-public-service-harvester
 ---
 spring:
   config.activate.on-profile: develop
