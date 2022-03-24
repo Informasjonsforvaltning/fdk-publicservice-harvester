@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import no.fdk.fdk_public_service_harvester.harvester.HarvesterActivity
+import no.fdk.fdk_public_service_harvester.model.HarvestAdminParameters
 import org.slf4j.LoggerFactory
 import org.springframework.amqp.core.Message
 import org.springframework.amqp.rabbit.annotation.RabbitListener
@@ -19,15 +20,22 @@ class RabbitMQListener(
     private val harvesterActivity: HarvesterActivity
 ) {
 
-    private fun createQueryParams(body: JsonNode?): Map<String, String> =
-        objectMapper.convertValue(body, object : TypeReference<Map<String, String>>() {})
-            .filter { ALLOWED_FIELDS.contains(it.key) }
+    private fun createQueryParams(body: JsonNode?): HarvestAdminParameters? =
+        try {
+            val params = objectMapper.convertValue(body, object : TypeReference<HarvestAdminParameters>() {})
+            if (params.publisherId != null || params.dataType != null || params.dataSourceType != null) {
+                params
+            } else null
+        } catch (ex: Exception) {
+            logger.info("exception when converting query params", ex)
+            null
+        }
 
     @RabbitListener(queues = ["#{receiverQueue.name}"])
     fun receiveServicesHarvestTrigger(@Payload body: JsonNode?, message: Message) {
         logger.info("Received message with key ${message.messageProperties.receivedRoutingKey}")
 
-        val params: Map<String, String> = createQueryParams(body)
+        val params: HarvestAdminParameters? = createQueryParams(body)
 
         harvesterActivity.initiateHarvest(params)
     }
