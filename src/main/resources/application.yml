@@ -18,7 +18,7 @@ spring:
     issuer-uri: ${SSO_HOST:https://sso.staging.fellesdatakatalog.digdir.no}/auth/realms/fdk
 application:
   publicServiceHarvesterUri: ${FDK_BASE_URI:https://staging.fellesdatakatalog.digdir.no}/public-services
-  harvestAdminRootUrl: ${HARVEST_ADMIN_ROOT_URL:http://fdk-harvest-admin:8080/api}
+  harvestAdminRootUrl: ${HARVEST_ADMIN_ROOT_URL:http://new-harvest-admin:8080}
 management:
   endpoints:
     web:
@@ -44,7 +44,7 @@ spring:
   data.mongodb.uri: mongodb://admin:admin@localhost:27017/publicServiceHarvester?authSource=admin&authMechanism=SCRAM-SHA-1
 application:
   publicServiceHarvesterUri: https://staging.fellesdatakatalog.digdir.no/public-services
-  harvestAdminRootUrl: https://admin-api.staging.fellesdatakatalog.digdir.no/api
+  harvestAdminRootUrl: https://new-admin.staging.fellesdatakatalog.digdir.no
 
 ---
 spring:
@@ -59,4 +59,4 @@ spring:
     password: admin
 application:
   publicServiceHarvesterUri: http://localhost:5000/public-services
-  harvestAdminRootUrl: http://localhost:5000/api
+  harvestAdminRootUrl: http://localhost:5000

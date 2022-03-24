@@ -17,7 +17,7 @@ fun startMockServer() {
         mockserver.stubFor(get(urlMatching("/fdk-public-service-publisher.ttl"))
             .willReturn(ok(File("src/test/resources/harvest_response_0.ttl").readText())))
 
-        mockserver.stubFor(get(urlEqualTo("/api/datasources"))
+        mockserver.stubFor(get(urlEqualTo("/datasources?dataType=publicService"))
             .willReturn(okJson(jacksonObjectMapper().writeValueAsString(listOf(TEST_HARVEST_SOURCE))))
         )
 
