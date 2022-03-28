@@ -6,6 +6,7 @@ import no.fdk.fdk_public_service_harvester.configuration.ApplicationProperties
 import no.fdk.fdk_public_service_harvester.model.HarvestAdminParameters
 import no.fdk.fdk_public_service_harvester.model.HarvestDataSource
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
@@ -20,8 +21,6 @@ class HarvestAdminAdapter(private val applicationProperties: ApplicationProperti
 
     fun urlWithParameters(params: HarvestAdminParameters): URL {
         val pathString: String = when {
-            !params.dataSourceId.isNullOrBlank() && !params.publisherId.isNullOrBlank() ->
-                "/organizations/${params.publisherId}/datasources/${params.dataSourceId}"
             params.publisherId.isNullOrBlank() -> "/datasources"
             else -> "/organizations/${params.publisherId}/datasources"
         }
@@ -38,25 +37,43 @@ class HarvestAdminAdapter(private val applicationProperties: ApplicationProperti
         return URL("${applicationProperties.harvestAdminRootUrl}$pathString$paramString")
     }
 
-    fun getDataSources(params: HarvestAdminParameters): List<HarvestDataSource> {
-        val url = urlWithParameters(params)
+    private fun urlForSingleDataSource(params: HarvestAdminParameters): URL {
+        val path = "/organizations/${params.publisherId}/datasources/${params.dataSourceId}"
+        return URL("${applicationProperties.harvestAdminRootUrl}$path")
+    }
+
+    fun getDataSources(params: HarvestAdminParameters): List<HarvestDataSource> =
+        if (!params.dataSourceId.isNullOrBlank() && !params.publisherId.isNullOrBlank()) {
+            harvestAdminGet(urlForSingleDataSource(params))
+                ?.let { jacksonObjectMapper().readValue(it) as HarvestDataSource }
+                ?.let { listOf(it) }
+                ?: emptyList()
+        } else {
+            harvestAdminGet(urlWithParameters(params))
+                ?.let { jacksonObjectMapper().readValue(it) as List<HarvestDataSource> }
+                ?: emptyList()
+        }
+
+    private fun harvestAdminGet(url: URL): String? {
         with(url.openConnection() as HttpURLConnection) {
             try {
-                setRequestProperty("Accept", MediaType.APPLICATION_JSON.toString())
-                setRequestProperty("Content-type", MediaType.APPLICATION_JSON.toString())
+                setRequestProperty(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON.toString())
+                setRequestProperty(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
 
                 if (HttpStatus.valueOf(responseCode).is2xxSuccessful) {
-                    val body = inputStream.bufferedReader().use(BufferedReader::readText)
-                    return jacksonObjectMapper().readValue(body)
+                    return inputStream.bufferedReader().use(BufferedReader::readText)
                 } else {
-                    logger.error("Fetch of harvest urls from $url failed, status: $responseCode", Exception("Fetch of data sources failed"))
+                    logger.error(
+                        "Fetch of from $url failed, status: $responseCode",
+                        Exception("Fetch from harvest admin failed")
+                    )
                 }
             } catch (ex: Exception) {
-                logger.error("Error fetching harvest urls from $url", ex)
+                logger.error("Error fetching from $url", ex)
             } finally {
                 disconnect()
             }
-            return emptyList()
+            return null
         }
     }
 
