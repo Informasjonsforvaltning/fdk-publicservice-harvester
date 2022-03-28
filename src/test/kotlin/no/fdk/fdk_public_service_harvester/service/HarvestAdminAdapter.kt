@@ -24,7 +24,11 @@ class HarvestAdminAdapterTest {
             whenever(valuesMock.harvestAdminRootUrl)
                 .thenReturn("http://www.example.com")
 
+<<<<<<< Updated upstream
             val url = adapter.urlWithParameters(HarvestAdminParameters(null, null, null, null))
+=======
+            val url = adapter.urlWithParameters(HarvestAdminParameters(null, null, null))
+>>>>>>> Stashed changes
 
             assertEquals(URL("http://www.example.com/datasources"), url)
         }
@@ -34,7 +38,11 @@ class HarvestAdminAdapterTest {
             whenever(valuesMock.harvestAdminRootUrl)
                 .thenReturn("http://www.example.com")
 
+<<<<<<< Updated upstream
             val url = adapter.urlWithParameters(HarvestAdminParameters("", "", "", ""))
+=======
+            val url = adapter.urlWithParameters(HarvestAdminParameters("", "", ""))
+>>>>>>> Stashed changes
 
             assertEquals(URL("http://www.example.com/datasources"), url)
         }

@@ -20,6 +20,7 @@ private val logger = LoggerFactory.getLogger(HarvestAdminAdapter::class.java)
 class HarvestAdminAdapter(private val applicationProperties: ApplicationProperties) {
 
     fun urlWithParameters(params: HarvestAdminParameters): URL {
+<<<<<<< Updated upstream
         val pathString: String = when {
             params.publisherId.isNullOrBlank() -> "/datasources"
             else -> "/organizations/${params.publisherId}/datasources"
@@ -55,6 +56,25 @@ class HarvestAdminAdapter(private val applicationProperties: ApplicationProperti
         }
 
     private fun harvestAdminGet(url: URL): String? {
+=======
+        val pathString: String = if (params.publisherId.isNullOrBlank()) "/datasources"
+        else "/organizations/${params.publisherId}/datasources"
+
+        val paramString: String = when {
+            !params.dataType.isNullOrBlank() && !params.dataSourceType.isNullOrBlank() -> {
+                "?dataType=${params.dataType}&dataSourceType=${params.dataSourceType}"
+            }
+            !params.dataType.isNullOrBlank() -> "?dataType=${params.dataType}"
+            !params.dataSourceType.isNullOrBlank() -> "?dataSourceType=${params.dataSourceType}"
+            else -> ""
+        }
+
+        return URL("${applicationProperties.harvestAdminRootUrl}$pathString$paramString")
+    }
+
+    fun getDataSources(params: HarvestAdminParameters): List<HarvestDataSource> {
+        val url = urlWithParameters(params)
+>>>>>>> Stashed changes
         with(url.openConnection() as HttpURLConnection) {
             try {
                 setRequestProperty(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON.toString())

@@ -19,6 +19,7 @@ spring:
 application:
   publicServiceHarvesterUri: ${FDK_BASE_URI:https://staging.fellesdatakatalog.digdir.no}/public-services
   harvestAdminRootUrl: ${HARVEST_ADMIN_ROOT_URL:http://new-harvest-admin:8080}
+<<<<<<< Updated upstream
 management:
   endpoints:
     web:
@@ -33,6 +34,9 @@ management:
         port: 8125
     tags:
       application: fdk-public-service-harvester
+=======
+
+>>>>>>> Stashed changes
 ---
 spring:
   config.activate.on-profile: develop
