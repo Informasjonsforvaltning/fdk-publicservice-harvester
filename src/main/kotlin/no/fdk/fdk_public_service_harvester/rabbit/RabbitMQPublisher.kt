@@ -1,6 +1,6 @@
 package no.fdk.fdk_public_service_harvester.rabbit
 
-import no.fdk.fdk_public_service_harvester.model.UpdateSearchMessage
+import no.fdk.fdk_public_service_harvester.model.HarvestReport
 import org.slf4j.LoggerFactory
 import org.springframework.amqp.AmqpException
 import org.springframework.amqp.rabbit.core.RabbitTemplate
@@ -10,17 +10,17 @@ private val LOGGER = LoggerFactory.getLogger(RabbitMQPublisher::class.java)
 
 @Service
 class RabbitMQPublisher(private val template: RabbitTemplate) {
-    fun send(dbId: String?) {
+    fun send(reports: List<HarvestReport>) {
         try {
             template.convertAndSend(
                 "harvests",
                 "public_services.harvester.UpdateSearchTrigger",
-                UpdateSearchMessage(dbId)
+                reports
             )
-            template.convertAndSend("harvests", "public_services.harvested", UpdateSearchMessage(dbId))
-            LOGGER.debug("Successfully sent UpdateSearchTrigger for $dbId")
+            template.convertAndSend("harvests", "public_services.harvested", reports)
+            LOGGER.debug("Successfully sent harvest completed message")
         } catch (e: AmqpException) {
-            LOGGER.error("Could not trigger search update", e)
+            LOGGER.error("Unable to send harvest completed message", e)
         }
     }
 }
