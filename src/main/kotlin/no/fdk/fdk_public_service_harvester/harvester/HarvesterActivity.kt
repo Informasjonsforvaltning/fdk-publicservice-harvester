@@ -2,7 +2,8 @@ package no.fdk.fdk_public_service_harvester.harvester
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
@@ -17,7 +18,6 @@ import org.springframework.stereotype.Service
 import java.util.*
 
 private val LOGGER = LoggerFactory.getLogger(HarvesterActivity::class.java)
-private const val HARVEST_ALL_ID = "all"
 
 @Service
 class HarvesterActivity(
@@ -28,7 +28,6 @@ class HarvesterActivity(
 ): CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
     private val activitySemaphore = Semaphore(1)
-    private val harvestSemaphore = Semaphore(5)
 
     @EventListener
     fun fullHarvestOnStartup(event: ApplicationReadyEvent) = initiateHarvest(null)
@@ -37,33 +36,20 @@ class HarvesterActivity(
         if (params == null) LOGGER.debug("starting harvest of all services")
         else LOGGER.debug("starting harvest with parameters $params")
 
-        val harvest = launch {
+        launch {
             activitySemaphore.withPermit {
                 harvestAdminAdapter.getDataSources(params ?: HarvestAdminParameters())
                     .filter { it.dataType == "publicService" }
                     .filter { it.url != null }
-                    .forEach {
-                        launch {
-                            harvestSemaphore.withPermit {
-                                try {
-                                    harvester.harvestServices(it, Calendar.getInstance())
-                                } catch (exception: Exception) {
-                                    LOGGER.error("Harvest of ${it.url} failed", exception)
-                                }
-                            }
-                        }
-                    }
+                    .map { async { harvester.harvestServices(it, Calendar.getInstance()) } }
+                    .awaitAll()
+                    .filterNotNull()
+                    .also { updateService.updateUnionModel() }
+                    .also {
+                        if (params != null) LOGGER.debug("completed harvest with parameters $params")
+                        else LOGGER.debug("completed harvest of all catalogs") }
+                    .run { publisher.send(this) }
             }
         }
-
-        harvest.invokeOnCompletion {
-            updateService.updateUnionModel()
-
-            if (params == null) LOGGER.debug("completed harvest of all services")
-            else LOGGER.debug("completed harvest with parameters $params")
-
-            publisher.send(HARVEST_ALL_ID)
-        }
-
     }
 }

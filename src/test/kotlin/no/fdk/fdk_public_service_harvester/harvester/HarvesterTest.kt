@@ -3,6 +3,8 @@ package no.fdk.fdk_public_service_harvester.harvester
 import com.nhaarman.mockitokotlin2.*
 import no.fdk.fdk_public_service_harvester.adapter.ServicesAdapter
 import no.fdk.fdk_public_service_harvester.configuration.ApplicationProperties
+import no.fdk.fdk_public_service_harvester.model.FdkIdAndUri
+import no.fdk.fdk_public_service_harvester.model.HarvestReport
 import no.fdk.fdk_public_service_harvester.model.PublicServiceMeta
 import no.fdk.fdk_public_service_harvester.repository.PublicServicesRepository
 import no.fdk.fdk_public_service_harvester.service.TurtleService
@@ -32,7 +34,7 @@ class HarvesterTest {
         whenever(valuesMock.publicServiceHarvesterUri)
             .thenReturn("http://localhost:5000/public-services")
 
-        harvester.harvestServices(TEST_HARVEST_SOURCE, TEST_HARVEST_DATE)
+        val report = harvester.harvestServices(TEST_HARVEST_SOURCE, TEST_HARVEST_DATE)
 
         argumentCaptor<Model, String>().apply {
             verify(turtleService, times(1)).saveAsHarvestSource(first.capture(), second.capture())
@@ -56,6 +58,21 @@ class HarvesterTest {
             verify(metaRepository, times(3)).save(capture())
             assertEquals(listOf(SERVICE_META_0, SERVICE_META_1, SERVICE_META_2), allValues.sortedBy { it.uri })
         }
+
+        val expectedReport = HarvestReport(
+            id="test-source",
+            url="http://localhost:5000/fdk-public-service-publisher.ttl",
+            dataType="publicService",
+            harvestError=false,
+            startTime = "2020-10-05 15:15:39 +0200",
+            endTime = report!!.endTime,
+            changedResources = listOf(
+                FdkIdAndUri(fdkId="d5d0c07c-c14f-3741-9aa3-126960958cf0", uri="http://public-service-publisher.fellesdatakatalog.digdir.no/services/1"),
+                FdkIdAndUri(fdkId="6ce4e524-3226-3591-ad99-c026705d4259", uri="http://public-service-publisher.fellesdatakatalog.digdir.no/services/2"),
+                FdkIdAndUri(fdkId="31249174-df02-3746-9d61-59fc61b4c5f9", uri="http://public-service-publisher.fellesdatakatalog.digdir.no/services/3"))
+        )
+
+        assertEquals(expectedReport, report)
     }
 
     @Test
@@ -68,7 +85,7 @@ class HarvesterTest {
         whenever(turtleService.getHarvestSource(TEST_HARVEST_SOURCE.url!!))
             .thenReturn(harvested)
 
-        harvester.harvestServices(TEST_HARVEST_SOURCE, TEST_HARVEST_DATE)
+        val report = harvester.harvestServices(TEST_HARVEST_SOURCE, TEST_HARVEST_DATE)
 
         argumentCaptor<Model, String>().apply {
             verify(turtleService, times(0)).saveAsHarvestSource(first.capture(), second.capture())
@@ -81,6 +98,17 @@ class HarvesterTest {
         argumentCaptor<PublicServiceMeta>().apply {
             verify(metaRepository, times(0)).save(capture())
         }
+
+        val expectedReport = HarvestReport(
+            id="test-source",
+            url="http://localhost:5000/fdk-public-service-publisher.ttl",
+            dataType="publicService",
+            harvestError=false,
+            startTime = "2020-10-05 15:15:39 +0200",
+            endTime = report!!.endTime
+        )
+
+        assertEquals(expectedReport, report)
     }
 
     @Test
@@ -104,7 +132,7 @@ class HarvesterTest {
         whenever(turtleService.getPublicService(SERVICE_ID_2, false))
             .thenReturn(responseReader.readFile("no_meta_service_2.ttl"))
 
-        harvester.harvestServices(TEST_HARVEST_SOURCE, NEW_TEST_HARVEST_DATE)
+        val report = harvester.harvestServices(TEST_HARVEST_SOURCE, NEW_TEST_HARVEST_DATE)
 
         argumentCaptor<Model, String>().apply {
             verify(turtleService, times(1)).saveAsHarvestSource(first.capture(), second.capture())
@@ -125,6 +153,17 @@ class HarvesterTest {
             assertEquals(SERVICE_META_0.copy(modified = NEW_TEST_HARVEST_DATE.timeInMillis), firstValue)
         }
 
+        val expectedReport = HarvestReport(
+            id="test-source",
+            url="http://localhost:5000/fdk-public-service-publisher.ttl",
+            dataType="publicService",
+            harvestError=false,
+            startTime = "2020-10-15 13:52:16 +0200",
+            endTime = report!!.endTime,
+            changedResources = listOf(FdkIdAndUri(fdkId="d5d0c07c-c14f-3741-9aa3-126960958cf0", uri="http://public-service-publisher.fellesdatakatalog.digdir.no/services/1"))
+        )
+
+        assertEquals(expectedReport, report)
     }
 
     @Test
@@ -134,7 +173,7 @@ class HarvesterTest {
         whenever(valuesMock.publicServiceHarvesterUri)
             .thenReturn("http://localhost:5000/public-services")
 
-        harvester.harvestServices(TEST_HARVEST_SOURCE, TEST_HARVEST_DATE)
+        val report = harvester.harvestServices(TEST_HARVEST_SOURCE, TEST_HARVEST_DATE)
 
         argumentCaptor<Model, String>().apply {
             verify(turtleService, times(0)).saveAsHarvestSource(first.capture(), second.capture())
@@ -147,6 +186,18 @@ class HarvesterTest {
         argumentCaptor<PublicServiceMeta>().apply {
             verify(metaRepository, times(0)).save(capture())
         }
+
+        val expectedReport = HarvestReport(
+            id="test-source",
+            url="http://localhost:5000/fdk-public-service-publisher.ttl",
+            dataType="publicService",
+            harvestError=true,
+            errorMessage = "[line: 4, col: 3 ] Undefined prefix: dct",
+            startTime = "2020-10-05 15:15:39 +0200",
+            endTime = report!!.endTime
+        )
+
+        assertEquals(expectedReport, report)
     }
 
 }
