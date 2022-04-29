@@ -23,17 +23,11 @@ class ServicesAdapter {
                 readTimeout = TEN_MINUTES
 
                 return if (responseCode != HttpStatus.OK.value()) {
-                    val exception = HarvestException("${source.url} responded with ${responseCode}, harvest will be aborted")
-                    LOGGER.error("${source.url} responded with ${responseCode}, harvest will be aborted", exception)
-                    throw exception
+                    throw HarvestException("${source.url} responded with ${responseCode}, harvest will be aborted")
                 } else {
                     inputStream.bufferedReader()
                         .use(BufferedReader::readText)
                 }
-
-            } catch (ex: Exception) {
-                LOGGER.error("Error when harvesting from ${source.url}", ex)
-                throw ex
             } finally {
                 disconnect()
             }
