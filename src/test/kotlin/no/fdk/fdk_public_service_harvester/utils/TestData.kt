@@ -19,6 +19,7 @@ val MONGO_ENV_VALUES: Map<String, String> = ImmutableMap.of(
 const val SERVICE_ID_0 = "d5d0c07c-c14f-3741-9aa3-126960958cf0"
 const val SERVICE_ID_1 = "6ce4e524-3226-3591-ad99-c026705d4259"
 const val SERVICE_ID_2 = "31249174-df02-3746-9d61-59fc61b4c5f9"
+const val SERVICE_ID_3 = "1fc38c3c-1c86-3161-a9a7-e443fd94d413"
 
 val TEST_HARVEST_DATE: Calendar = Calendar.Builder().setTimeZone(TimeZone.getTimeZone("UTC")).setDate(2020, 9, 5).setTimeOfDay(13, 15, 39, 831).build()
 val NEW_TEST_HARVEST_DATE: Calendar = Calendar.Builder().setTimeZone(TimeZone.getTimeZone("UTC")).setDate(2020, 9, 15).setTimeOfDay(11, 52, 16, 122).build()

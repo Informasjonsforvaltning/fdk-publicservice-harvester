@@ -56,7 +56,7 @@ class UpdateServiceTest {
         @Test
         fun updateUnionModel() {
             whenever(metaRepository.findAll())
-                .thenReturn(listOf(SERVICE_META_0, SERVICE_META_1, SERVICE_META_2))
+                .thenReturn(listOf(SERVICE_META_0, SERVICE_META_1, SERVICE_META_2, SERVICE_META_3))
 
             whenever(turtleService.getPublicService(SERVICE_ID_0, true))
                 .thenReturn(responseReader.readFile("service_0.ttl"))
@@ -64,6 +64,8 @@ class UpdateServiceTest {
                 .thenReturn(responseReader.readFile("service_1.ttl"))
             whenever(turtleService.getPublicService(SERVICE_ID_2, true))
                 .thenReturn(responseReader.readFile("service_2.ttl"))
+            whenever(turtleService.getPublicService(SERVICE_ID_3, true))
+                .thenReturn(responseReader.readFile("service_3.ttl"))
 
             whenever(turtleService.getPublicService(SERVICE_ID_0, false))
                 .thenReturn(responseReader.readFile("no_meta_service_0.ttl"))
@@ -71,6 +73,8 @@ class UpdateServiceTest {
                 .thenReturn(responseReader.readFile("no_meta_service_1.ttl"))
             whenever(turtleService.getPublicService(SERVICE_ID_2, false))
                 .thenReturn(responseReader.readFile("no_meta_service_2.ttl"))
+            whenever(turtleService.getPublicService(SERVICE_ID_3, false))
+                .thenReturn(responseReader.readFile("no_meta_service_3.ttl"))
 
             updateService.updateUnionModel()
 

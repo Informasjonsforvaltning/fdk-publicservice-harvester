@@ -43,20 +43,22 @@ class HarvesterTest {
         }
 
         argumentCaptor<Model, String, Boolean>().apply {
-            verify(turtleService, times(6)).saveAsPublicService(first.capture(), second.capture(), third.capture())
+            verify(turtleService, times(8)).saveAsPublicService(first.capture(), second.capture(), third.capture())
             assertTrue(checkIfIsomorphicAndPrintDiff(first.allValues[0], responseReader.parseFile("no_meta_service_0.ttl", "TURTLE"), "harvestDataSourceSavedWhenDBIsEmpty-norecords0"))
             assertTrue(checkIfIsomorphicAndPrintDiff(first.allValues[1], responseReader.parseFile("service_0.ttl", "TURTLE"), "harvestDataSourceSavedWhenDBIsEmpty-0"))
             assertTrue(checkIfIsomorphicAndPrintDiff(first.allValues[2], responseReader.parseFile("no_meta_service_1.ttl", "TURTLE"), "harvestDataSourceSavedWhenDBIsEmpty-norecords1"))
             assertTrue(checkIfIsomorphicAndPrintDiff(first.allValues[3], responseReader.parseFile("service_1.ttl", "TURTLE"), "harvestDataSourceSavedWhenDBIsEmpty-1"))
             assertTrue(checkIfIsomorphicAndPrintDiff(first.allValues[4], responseReader.parseFile("no_meta_service_2.ttl", "TURTLE"), "harvestDataSourceSavedWhenDBIsEmpty-norecords2"))
             assertTrue(checkIfIsomorphicAndPrintDiff(first.allValues[5], responseReader.parseFile("service_2.ttl", "TURTLE"), "harvestDataSourceSavedWhenDBIsEmpty-2"))
-            assertEquals(listOf(SERVICE_ID_0, SERVICE_ID_0, SERVICE_ID_1, SERVICE_ID_1, SERVICE_ID_2, SERVICE_ID_2), second.allValues)
-            Assertions.assertEquals(listOf(false, true, false, true, false, true), third.allValues)
+            assertTrue(checkIfIsomorphicAndPrintDiff(first.allValues[6], responseReader.parseFile("no_meta_service_3.ttl", "TURTLE"), "harvestDataSourceSavedWhenDBIsEmpty-norecords3"))
+            assertTrue(checkIfIsomorphicAndPrintDiff(first.allValues[7], responseReader.parseFile("service_3.ttl", "TURTLE"), "harvestDataSourceSavedWhenDBIsEmpty-3"))
+            assertEquals(listOf(SERVICE_ID_0, SERVICE_ID_0, SERVICE_ID_1, SERVICE_ID_1, SERVICE_ID_2, SERVICE_ID_2, SERVICE_ID_3, SERVICE_ID_3), second.allValues)
+            Assertions.assertEquals(listOf(false, true, false, true, false, true, false, true), third.allValues)
         }
 
         argumentCaptor<PublicServiceMeta>().apply {
-            verify(metaRepository, times(3)).save(capture())
-            assertEquals(listOf(SERVICE_META_0, SERVICE_META_1, SERVICE_META_2), allValues.sortedBy { it.uri })
+            verify(metaRepository, times(4)).save(capture())
+            assertEquals(listOf(SERVICE_META_0, SERVICE_META_1, SERVICE_META_2, SERVICE_META_3), allValues)
         }
 
         val expectedReport = HarvestReport(
@@ -67,9 +69,8 @@ class HarvesterTest {
             startTime = "2020-10-05 15:15:39 +0200",
             endTime = report!!.endTime,
             changedResources = listOf(
-                FdkIdAndUri(fdkId="d5d0c07c-c14f-3741-9aa3-126960958cf0", uri="http://public-service-publisher.fellesdatakatalog.digdir.no/services/1"),
-                FdkIdAndUri(fdkId="6ce4e524-3226-3591-ad99-c026705d4259", uri="http://public-service-publisher.fellesdatakatalog.digdir.no/services/2"),
-                FdkIdAndUri(fdkId="31249174-df02-3746-9d61-59fc61b4c5f9", uri="http://public-service-publisher.fellesdatakatalog.digdir.no/services/3"))
+                FdkIdAndUri(fdkId= SERVICE_ID_0, uri= SERVICE_META_0.uri), FdkIdAndUri(fdkId= SERVICE_ID_1, uri= SERVICE_META_1.uri),
+                FdkIdAndUri(fdkId= SERVICE_ID_2, uri= SERVICE_META_2.uri), FdkIdAndUri(fdkId= SERVICE_ID_3, uri= SERVICE_META_3.uri))
         )
 
         assertEquals(expectedReport, report)
@@ -125,12 +126,16 @@ class HarvesterTest {
             .thenReturn(Optional.of(SERVICE_META_1))
         whenever(metaRepository.findById(SERVICE_META_2.uri))
             .thenReturn(Optional.of(SERVICE_META_2))
+        whenever(metaRepository.findById(SERVICE_META_3.uri))
+            .thenReturn(Optional.of(SERVICE_META_3))
         whenever(turtleService.getPublicService(SERVICE_ID_0, false))
             .thenReturn(responseReader.readFile("no_meta_service_0_diff.ttl"))
         whenever(turtleService.getPublicService(SERVICE_ID_1, false))
             .thenReturn(responseReader.readFile("no_meta_service_1.ttl"))
         whenever(turtleService.getPublicService(SERVICE_ID_2, false))
             .thenReturn(responseReader.readFile("no_meta_service_2.ttl"))
+        whenever(turtleService.getPublicService(SERVICE_ID_3, false))
+            .thenReturn(responseReader.readFile("no_meta_service_3.ttl"))
 
         val report = harvester.harvestServices(TEST_HARVEST_SOURCE, NEW_TEST_HARVEST_DATE)
 
