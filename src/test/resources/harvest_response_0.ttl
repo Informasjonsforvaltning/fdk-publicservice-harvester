@@ -1,8 +1,11 @@
 @prefix cpsv: <http://purl.org/vocab/cpsv#> .
+@prefix cpsvno: <https://data.norge.no/vocabulary/cpsvno#> .
 @prefix dct: <http://purl.org/dc/terms/> .
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
 @prefix cv: <http://data.europa.eu/m8g/> .
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
 @prefix foaf:  <http://xmlns.com/foaf/0.1/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://public-service-publisher.fellesdatakatalog.digdir.no/services/1> a cpsv:PublicService ;
   dct:identifier "1" ;
@@ -55,3 +58,19 @@
   dct:title "Statistisk sentralbyrå"@nb ;
   foaf:name "STATISTISK SENTRALBYRÅ" ;
   cv:playsRole <http://public-service-publisher.fellesdatakatalog.digdir.no/participation/1> .
+
+<https://raw.githubusercontent.com/Informasjonsforvaltning/cpsv-ap-no/develop/examples/exTjenesteDummy.ttl> a cpsvno:Service ;
+   dct:description """Dette er en dummytjeneste som kan brukes i forbindelse med testing av CPSV-AP-NO når det er behov for en relasjon til en tjeneste som det ikke finnes eksempel på ennå."""@nb,
+       """Teksten blir vist på nynorsk."""@nn,
+       """The text is displayed in English."""@en;
+   cv:ownedBy <https://raw.githubusercontent.com/Informasjonsforvaltning/cpsv-ap-no/develop/examples/exAktorDummy.ttl>;
+   dct:identifier "https://raw.githubusercontent.com/Informasjonsforvaltning/cpsv-ap-no/develop/examples/exTjenesteDummy.ttl"^^xsd:anyURI;
+   dcat:contactPoint <https://raw.githubusercontent.com/Informasjonsforvaltning/cpsv-ap-no/develop/examples/exKontaktpunktDummy.ttl>;
+   dct:title """Dummytjeneste"""@nb,
+       """Dummytjeneste"""@nn,
+       """Dummy service"""@en;
+   cpsv:produces <https://raw.githubusercontent.com/Informasjonsforvaltning/cpsv-ap-no/develop/examples/exTjenesteresultatDummy.ttl>;
+   dct:language <http://publications.europa.eu/resource/authority/language/ENG>,
+       <http://publications.europa.eu/resource/authority/language/NOB>;
+   .
+

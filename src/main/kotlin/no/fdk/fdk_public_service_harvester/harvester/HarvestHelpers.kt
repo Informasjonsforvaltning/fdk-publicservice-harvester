@@ -18,8 +18,7 @@ fun PublicServiceRDFModel.harvestDiff(dbTurtle: String?): Boolean =
     else !harvested.isIsomorphicWith(parseRDFResponse(dbTurtle, Lang.TURTLE, null))
 
 fun splitServicesFromRDF(harvested: Model, sourceURL: String): List<PublicServiceRDFModel> =
-    harvested.listResourcesWithProperty(RDF.type, CPSV.PublicService)
-        .toList()
+    harvested.listResourcesWithServiceType()
         .filterBlankNodeServices(sourceURL)
         .map { resource ->
 
@@ -37,6 +36,16 @@ fun splitServicesFromRDF(harvested: Model, sourceURL: String): List<PublicServic
                 harvested = model
             )
         }
+
+private fun Model.listResourcesWithServiceType(): List<Resource> {
+    val publicServices = listResourcesWithProperty(RDF.type, CPSV.PublicService)
+        .toList()
+
+    val cpsvnoServices = listResourcesWithProperty(RDF.type, CPSVNO.Service)
+        .toList()
+
+    return listOf(publicServices, cpsvnoServices).flatten()
+}
 
 private fun List<Resource>.filterBlankNodeServices(sourceURL: String): List<Resource> =
     filter {
@@ -112,6 +121,8 @@ data class PublicServiceRDFModel (
 private fun Model.resourceShouldBeAdded(resource: Resource, types: List<RDFNode>): Boolean =
     when {
         types.contains(CPSV.PublicService) -> false
+        types.contains(CPSVNO.Service) -> false
+        types.contains(CV.Event) -> false
         types.contains(CV.BusinessEvent) -> false
         types.contains(CV.LifeEvent) -> false
         !resource.isURIResource -> true
