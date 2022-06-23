@@ -34,7 +34,7 @@ class HarvesterTest {
         whenever(valuesMock.publicServiceHarvesterUri)
             .thenReturn("http://localhost:5000/public-services")
 
-        val report = harvester.harvestServices(TEST_HARVEST_SOURCE, TEST_HARVEST_DATE)
+        val report = harvester.harvestServices(TEST_HARVEST_SOURCE, TEST_HARVEST_DATE, false)
 
         argumentCaptor<Model, String>().apply {
             verify(turtleService, times(1)).saveAsHarvestSource(first.capture(), second.capture())
@@ -86,19 +86,11 @@ class HarvesterTest {
         whenever(turtleService.getHarvestSource(TEST_HARVEST_SOURCE.url!!))
             .thenReturn(harvested)
 
-        val report = harvester.harvestServices(TEST_HARVEST_SOURCE, TEST_HARVEST_DATE)
+        val report = harvester.harvestServices(TEST_HARVEST_SOURCE, TEST_HARVEST_DATE, false)
 
-        argumentCaptor<Model, String>().apply {
-            verify(turtleService, times(0)).saveAsHarvestSource(first.capture(), second.capture())
-        }
-
-        argumentCaptor<Model, String, Boolean>().apply {
-            verify(turtleService, times(0)).saveAsPublicService(first.capture(), second.capture(), third.capture())
-        }
-
-        argumentCaptor<PublicServiceMeta>().apply {
-            verify(metaRepository, times(0)).save(capture())
-        }
+        verify(turtleService, times(0)).saveAsHarvestSource(any(), any())
+        verify(turtleService, times(0)).saveAsPublicService(any(), any(), any())
+        verify(metaRepository, times(0)).save(any())
 
         val expectedReport = HarvestReport(
             id="test-source",
@@ -107,6 +99,39 @@ class HarvesterTest {
             harvestError=false,
             startTime = "2020-10-05 15:15:39 +0200",
             endTime = report!!.endTime
+        )
+
+        assertEquals(expectedReport, report)
+    }
+
+    @Test
+    fun noChangesIgnoredWhenForceUpdateIsTrue() {
+        val harvested = responseReader.readFile("harvest_response_0.ttl")
+        whenever(adapter.fetchServices(TEST_HARVEST_SOURCE))
+            .thenReturn(harvested)
+        whenever(valuesMock.publicServiceHarvesterUri)
+            .thenReturn("http://localhost:5000/public-services")
+        whenever(turtleService.getHarvestSource(TEST_HARVEST_SOURCE.url!!))
+            .thenReturn(harvested)
+
+        val report = harvester.harvestServices(TEST_HARVEST_SOURCE, TEST_HARVEST_DATE, true)
+
+        verify(turtleService, times(1)).saveAsHarvestSource(any(), any())
+        verify(turtleService, times(8)).saveAsPublicService(any(), any(), any())
+        verify(metaRepository, times(4)).save(any())
+
+        val expectedReport = HarvestReport(
+            id="test-source",
+            url="http://localhost:5000/fdk-public-service-publisher.ttl",
+            dataType="publicService",
+            harvestError=false,
+            startTime = "2020-10-05 15:15:39 +0200",
+            endTime = report!!.endTime,
+            changedResources=listOf(
+                FdkIdAndUri(fdkId="d5d0c07c-c14f-3741-9aa3-126960958cf0", uri="http://public-service-publisher.fellesdatakatalog.digdir.no/services/1"),
+                FdkIdAndUri(fdkId="6ce4e524-3226-3591-ad99-c026705d4259", uri="http://public-service-publisher.fellesdatakatalog.digdir.no/services/2"),
+                FdkIdAndUri(fdkId="31249174-df02-3746-9d61-59fc61b4c5f9", uri="http://public-service-publisher.fellesdatakatalog.digdir.no/services/3"),
+                FdkIdAndUri(fdkId="1fc38c3c-1c86-3161-a9a7-e443fd94d413", uri="https://raw.githubusercontent.com/Informasjonsforvaltning/cpsv-ap-no/develop/examples/exTjenesteDummy.ttl"))
         )
 
         assertEquals(expectedReport, report)
@@ -137,7 +162,7 @@ class HarvesterTest {
         whenever(turtleService.getPublicService(SERVICE_ID_3, false))
             .thenReturn(responseReader.readFile("no_meta_service_3.ttl"))
 
-        val report = harvester.harvestServices(TEST_HARVEST_SOURCE, NEW_TEST_HARVEST_DATE)
+        val report = harvester.harvestServices(TEST_HARVEST_SOURCE, NEW_TEST_HARVEST_DATE, false)
 
         argumentCaptor<Model, String>().apply {
             verify(turtleService, times(1)).saveAsHarvestSource(first.capture(), second.capture())
@@ -178,19 +203,11 @@ class HarvesterTest {
         whenever(valuesMock.publicServiceHarvesterUri)
             .thenReturn("http://localhost:5000/public-services")
 
-        val report = harvester.harvestServices(TEST_HARVEST_SOURCE, TEST_HARVEST_DATE)
+        val report = harvester.harvestServices(TEST_HARVEST_SOURCE, TEST_HARVEST_DATE, false)
 
-        argumentCaptor<Model, String>().apply {
-            verify(turtleService, times(0)).saveAsHarvestSource(first.capture(), second.capture())
-        }
-
-        argumentCaptor<Model, String, Boolean>().apply {
-            verify(turtleService, times(0)).saveAsPublicService(first.capture(), second.capture(), third.capture())
-        }
-
-        argumentCaptor<PublicServiceMeta>().apply {
-            verify(metaRepository, times(0)).save(capture())
-        }
+        verify(turtleService, times(0)).saveAsHarvestSource(any(), any())
+        verify(turtleService, times(0)).saveAsPublicService(any(), any(), any())
+        verify(metaRepository, times(0)).save(any())
 
         val expectedReport = HarvestReport(
             id="test-source",
