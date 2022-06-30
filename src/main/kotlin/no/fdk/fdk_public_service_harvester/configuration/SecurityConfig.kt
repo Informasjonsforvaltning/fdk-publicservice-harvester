@@ -5,34 +5,31 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator
 import org.springframework.security.oauth2.jwt.*
 import org.springframework.security.oauth2.jwt.JwtClaimNames.AUD
+import org.springframework.security.web.SecurityFilterChain
 
-@Configuration
-open class SecurityConfig : WebSecurityConfigurerAdapter() {
-    override fun configure(http: HttpSecurity) {
+@EnableWebSecurity
+open class SecurityConfig {
+
+    @Bean
+    open fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http.csrf().disable()
-
-        http.cors()
-            .and()
-                .authorizeRequests()
-                    .antMatchers(HttpMethod.OPTIONS)
-                        .permitAll()
-                    .antMatchers(HttpMethod.POST, "/update/meta")
-                        .authenticated()
-                    .antMatchers(HttpMethod.GET)
-                        .permitAll()
-                    .anyRequest()
-                        .authenticated()
-            .and()
-                .oauth2ResourceServer()
-                    .jwt()
+            .cors().and()
+            .authorizeRequests{ authorize ->
+                authorize.antMatchers(HttpMethod.OPTIONS).permitAll()
+                    .antMatchers(HttpMethod.POST, "/update/meta").authenticated()
+                    .antMatchers(HttpMethod.GET).permitAll()
+                    .anyRequest().authenticated() }
+            .oauth2ResourceServer { resourceServer -> resourceServer.jwt() }
+        return http.build()
     }
 
     @Bean
-    open fun jwtDecoder(properties: OAuth2ResourceServerProperties): JwtDecoder? {
+    open fun jwtDecoder(properties: OAuth2ResourceServerProperties): JwtDecoder {
         val jwtDecoder = NimbusJwtDecoder.withJwkSetUri(properties.jwt.jwkSetUri).build()
         jwtDecoder.setJwtValidator(
                 DelegatingOAuth2TokenValidator(
