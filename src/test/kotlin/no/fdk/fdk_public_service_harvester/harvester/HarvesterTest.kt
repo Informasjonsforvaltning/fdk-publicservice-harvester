@@ -1,6 +1,5 @@
 package no.fdk.fdk_public_service_harvester.harvester
 
-import com.nhaarman.mockitokotlin2.*
 import no.fdk.fdk_public_service_harvester.adapter.ServicesAdapter
 import no.fdk.fdk_public_service_harvester.configuration.ApplicationProperties
 import no.fdk.fdk_public_service_harvester.model.FdkIdAndUri
@@ -14,6 +13,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.*
 import java.util.*
 import kotlin.test.assertEquals
 
