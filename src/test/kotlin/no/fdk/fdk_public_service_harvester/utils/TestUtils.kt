@@ -102,8 +102,17 @@ fun populateDB() {
     val fdkServiceTurtleCollection = mongoDatabase.getCollection("fdkServiceTurtle")
     fdkServiceTurtleCollection.insertMany(fdkTurtleDBPopulation())
 
+    val catalogTurtleCollection = mongoDatabase.getCollection("catalogTurtle")
+    catalogTurtleCollection.insertMany(catalogTurtleDBPopulation())
+
+    val fdkCatalogTurtleCollection = mongoDatabase.getCollection("fdkCatalogTurtle")
+    fdkCatalogTurtleCollection.insertMany(fdkCatalogTurtleDBPopulation())
+
     val serviceMetaCollection = mongoDatabase.getCollection("serviceMeta")
     serviceMetaCollection.insertMany(metaDBPopulation())
+
+    val catalogMetaCollection = mongoDatabase.getCollection("catalogMeta")
+    catalogMetaCollection.insertMany(metaCatalogPopulation())
 
     client.close()
 }

@@ -5,6 +5,7 @@ import no.fdk.fdk_public_service_harvester.configuration.ApplicationProperties
 import no.fdk.fdk_public_service_harvester.model.FdkIdAndUri
 import no.fdk.fdk_public_service_harvester.model.HarvestReport
 import no.fdk.fdk_public_service_harvester.model.PublicServiceMeta
+import no.fdk.fdk_public_service_harvester.repository.CatalogRepository
 import no.fdk.fdk_public_service_harvester.repository.PublicServicesRepository
 import no.fdk.fdk_public_service_harvester.service.TurtleService
 import no.fdk.fdk_public_service_harvester.utils.*
@@ -20,11 +21,12 @@ import kotlin.test.assertEquals
 @Tag("unit")
 class HarvesterTest {
     private val metaRepository: PublicServicesRepository = mock()
+    private val catalogMetaRepository: CatalogRepository = mock()
     private val turtleService: TurtleService = mock()
     private val valuesMock: ApplicationProperties = mock()
     private val adapter: ServicesAdapter = mock()
 
-    private val harvester = PublicServicesHarvester(adapter, metaRepository, turtleService, valuesMock)
+    private val harvester = PublicServicesHarvester(adapter, metaRepository, catalogMetaRepository, turtleService, valuesMock)
     private val responseReader = TestResponseReader()
 
     @Test
@@ -43,17 +45,13 @@ class HarvesterTest {
         }
 
         argumentCaptor<Model, String, Boolean>().apply {
-            verify(turtleService, times(8)).saveAsPublicService(first.capture(), second.capture(), third.capture())
+            verify(turtleService, times(4)).saveAsPublicService(first.capture(), second.capture(), third.capture())
             assertTrue(checkIfIsomorphicAndPrintDiff(first.allValues[0], responseReader.parseFile("no_meta_service_0.ttl", "TURTLE"), "harvestDataSourceSavedWhenDBIsEmpty-norecords0"))
-            assertTrue(checkIfIsomorphicAndPrintDiff(first.allValues[1], responseReader.parseFile("service_0.ttl", "TURTLE"), "harvestDataSourceSavedWhenDBIsEmpty-0"))
-            assertTrue(checkIfIsomorphicAndPrintDiff(first.allValues[2], responseReader.parseFile("no_meta_service_1.ttl", "TURTLE"), "harvestDataSourceSavedWhenDBIsEmpty-norecords1"))
-            assertTrue(checkIfIsomorphicAndPrintDiff(first.allValues[3], responseReader.parseFile("service_1.ttl", "TURTLE"), "harvestDataSourceSavedWhenDBIsEmpty-1"))
-            assertTrue(checkIfIsomorphicAndPrintDiff(first.allValues[4], responseReader.parseFile("no_meta_service_2.ttl", "TURTLE"), "harvestDataSourceSavedWhenDBIsEmpty-norecords2"))
-            assertTrue(checkIfIsomorphicAndPrintDiff(first.allValues[5], responseReader.parseFile("service_2.ttl", "TURTLE"), "harvestDataSourceSavedWhenDBIsEmpty-2"))
-            assertTrue(checkIfIsomorphicAndPrintDiff(first.allValues[6], responseReader.parseFile("no_meta_service_3.ttl", "TURTLE"), "harvestDataSourceSavedWhenDBIsEmpty-norecords3"))
-            assertTrue(checkIfIsomorphicAndPrintDiff(first.allValues[7], responseReader.parseFile("service_3.ttl", "TURTLE"), "harvestDataSourceSavedWhenDBIsEmpty-3"))
-            assertEquals(listOf(SERVICE_ID_0, SERVICE_ID_0, SERVICE_ID_1, SERVICE_ID_1, SERVICE_ID_2, SERVICE_ID_2, SERVICE_ID_3, SERVICE_ID_3), second.allValues)
-            Assertions.assertEquals(listOf(false, true, false, true, false, true, false, true), third.allValues)
+            assertTrue(checkIfIsomorphicAndPrintDiff(first.allValues[1], responseReader.parseFile("no_meta_service_1.ttl", "TURTLE"), "harvestDataSourceSavedWhenDBIsEmpty-norecords1"))
+            assertTrue(checkIfIsomorphicAndPrintDiff(first.allValues[2], responseReader.parseFile("no_meta_service_2.ttl", "TURTLE"), "harvestDataSourceSavedWhenDBIsEmpty-norecords2"))
+            assertTrue(checkIfIsomorphicAndPrintDiff(first.allValues[3], responseReader.parseFile("no_meta_service_3.ttl", "TURTLE"), "harvestDataSourceSavedWhenDBIsEmpty-norecords3"))
+            assertEquals(listOf(SERVICE_ID_0, SERVICE_ID_1, SERVICE_ID_2, SERVICE_ID_3), second.allValues)
+            Assertions.assertEquals(listOf(false, false, false, false), third.allValues)
         }
 
         argumentCaptor<PublicServiceMeta>().apply {
@@ -117,7 +115,7 @@ class HarvesterTest {
         val report = harvester.harvestServices(TEST_HARVEST_SOURCE, TEST_HARVEST_DATE, true)
 
         verify(turtleService, times(1)).saveAsHarvestSource(any(), any())
-        verify(turtleService, times(8)).saveAsPublicService(any(), any(), any())
+        verify(turtleService, times(4)).saveAsPublicService(any(), any(), any())
         verify(metaRepository, times(4)).save(any())
 
         val expectedReport = HarvestReport(
@@ -171,11 +169,10 @@ class HarvesterTest {
         }
 
         argumentCaptor<Model, String, Boolean>().apply {
-            verify(turtleService, times(2)).saveAsPublicService(first.capture(), second.capture(), third.capture())
+            verify(turtleService, times(1)).saveAsPublicService(first.capture(), second.capture(), third.capture())
             assertTrue(checkIfIsomorphicAndPrintDiff(first.allValues[0], responseReader.parseFile("no_meta_service_0.ttl", "TURTLE"), "onlyRelevantUpdatedWhenHarvestedFromDB-norecords0"))
-            assertTrue(checkIfIsomorphicAndPrintDiff(first.allValues[1], responseReader.parseFile("service_0_modified.ttl", "TURTLE"), "onlyRelevantUpdatedWhenHarvestedFromDB-0"))
-            assertEquals(listOf(SERVICE_ID_0, SERVICE_ID_0), second.allValues)
-            Assertions.assertEquals(listOf(false, true), third.allValues)
+            assertEquals(listOf(SERVICE_ID_0), second.allValues)
+            Assertions.assertEquals(listOf(false), third.allValues)
         }
 
         argumentCaptor<PublicServiceMeta>().apply {
@@ -217,6 +214,42 @@ class HarvesterTest {
             errorMessage = "[line: 4, col: 3 ] Undefined prefix: dct",
             startTime = "2020-10-05 15:15:39 +0200",
             endTime = report!!.endTime
+        )
+
+        assertEquals(expectedReport, report)
+    }
+
+    @Test
+    fun harvestDataSourceWithCatalog() {
+        whenever(adapter.fetchServices(TEST_HARVEST_SOURCE))
+            .thenReturn(responseReader.readFile("harvest_response_1.ttl"))
+        whenever(valuesMock.publicServiceHarvesterUri)
+            .thenReturn("http://localhost:5000/public-services")
+
+        val report = harvester.harvestServices(TEST_HARVEST_SOURCE, TEST_HARVEST_DATE, false)
+
+        argumentCaptor<Model, String>().apply {
+            verify(turtleService, times(1)).saveAsHarvestSource(first.capture(), second.capture())
+            assertTrue(first.firstValue.isIsomorphicWith(responseReader.parseFile("harvest_response_1.ttl", "TURTLE")))
+            Assertions.assertEquals(TEST_HARVEST_SOURCE.url, second.firstValue)
+        }
+
+        verify(turtleService, times(2)).saveAsPublicService(any(), any(), any())
+        verify(turtleService, times(1)).saveAsCatalog(any(), any(), any())
+        verify(metaRepository, times(2)).save(any())
+        verify(catalogMetaRepository, times(1)).save(any())
+
+        val expectedReport = HarvestReport(
+            id="test-source",
+            url="http://localhost:5000/fdk-public-service-publisher.ttl",
+            dataType="publicService",
+            harvestError=false,
+            startTime = "2020-10-05 15:15:39 +0200",
+            endTime = report!!.endTime,
+            changedCatalogs=listOf(FdkIdAndUri(fdkId=CATALOG_ID_1, uri="http://test.no/catalogs/0")),
+            changedResources = listOf(
+                FdkIdAndUri(fdkId="ef4ca382-ee65-3a92-be9e-40fd93da53bc", uri="http://test.no/services/0"),
+                FdkIdAndUri(fdkId="7baa248b-1a27-3c46-80cf-889882d6b894", uri="http://test.no/services/1"))
         )
 
         assertEquals(expectedReport, report)

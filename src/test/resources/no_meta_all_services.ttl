@@ -57,3 +57,11 @@
    dct:language <http://publications.europa.eu/resource/authority/language/ENG>,
        <http://publications.europa.eu/resource/authority/language/NOB>;
    .
+
+<http://test.no/services/0> a cpsv:PublicService ;
+  dct:identifier "0" ;
+  dct:title "Test service 0"@en .
+
+<http://test.no/services/1> a cpsvno:Service ;
+  dct:identifier "1" ;
+  dct:title "Test service 1"@en .

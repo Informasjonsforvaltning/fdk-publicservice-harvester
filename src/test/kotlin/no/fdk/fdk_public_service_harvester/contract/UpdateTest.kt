@@ -40,29 +40,24 @@ class UpdateTest: ApiTestContext() {
 
     @Test
     fun noChangesWhenRunOnCorrectMeta() {
-        val all = apiGet("/events", "text/turtle", port)
-        val catalog = apiGet("/events/$SERVICE_ID_0", "text/turtle", port)
-        val infoModel = apiGet("/events/$SERVICE_ID_1", "text/turtle", port)
+        val services = apiGet("/public-services?catalogrecords=true", "text/turtle", port)
+        val catalogs = apiGet("/public-services/catalogs?catalogrecords=true", "text/turtle", port)
 
         val response = apiAuthorizedPost("/update/meta", JwtToken(Access.ROOT).toString(), port)
 
         assertEquals(HttpStatus.OK.value(), response["status"])
 
-        val expectedAll = responseReader.parseResponse(all["body"] as String, "TURTLE")
-        val expectedCatalog = responseReader.parseResponse(catalog["body"] as String, "TURTLE")
-        val expectedInfoModel = responseReader.parseResponse(infoModel["body"] as String, "TURTLE")
+        val expectedServices = responseReader.parseResponse(services["body"] as String, "TURTLE")
+        val expectedCatalogs = responseReader.parseResponse(catalogs["body"] as String, "TURTLE")
 
-        val allAfterUpdate = apiGet("/events", "text/turtle", port)
-        val catalogAfterUpdate = apiGet("/events/$SERVICE_ID_0", "text/turtle", port)
-        val infoModelAfterUpdate = apiGet("/events/$SERVICE_ID_1", "text/turtle", port)
+        val servicesAfterUpdate = apiGet("/public-services?catalogrecords=true", "text/turtle", port)
+        val catalogsAfterUpdate = apiGet("/public-services/catalogs?catalogrecords=true", "text/turtle", port)
 
-        val actualAll = responseReader.parseResponse(allAfterUpdate["body"] as String, "TURTLE")
-        val actualCatalog = responseReader.parseResponse(catalogAfterUpdate["body"] as String, "TURTLE")
-        val actualInfoModel = responseReader.parseResponse(infoModelAfterUpdate["body"] as String, "TURTLE")
+        val actualServices = responseReader.parseResponse(servicesAfterUpdate["body"] as String, "TURTLE")
+        val actualCatalogs = responseReader.parseResponse(catalogsAfterUpdate["body"] as String, "TURTLE")
 
-        assertTrue(checkIfIsomorphicAndPrintDiff(expectedAll, actualAll, "UpdateMetaAll"))
-        assertTrue(checkIfIsomorphicAndPrintDiff(expectedCatalog, actualCatalog, "UpdateMetaCatalog"))
-        assertTrue(checkIfIsomorphicAndPrintDiff(expectedInfoModel, actualInfoModel, "UpdateMetaInfo"))
+        assertTrue(checkIfIsomorphicAndPrintDiff(expectedServices, actualServices, "UpdateMetaServices"))
+        assertTrue(checkIfIsomorphicAndPrintDiff(expectedCatalogs, actualCatalogs, "UpdateMetaCatalogs"))
     }
 
 }

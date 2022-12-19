@@ -1,0 +1,6 @@
+@prefix cpsvno: <https://data.norge.no/vocabulary/cpsvno#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+
+<http://test.no/services/1> a cpsvno:Service ;
+  dct:identifier "1" ;
+  dct:title "Test service 1"@en .
