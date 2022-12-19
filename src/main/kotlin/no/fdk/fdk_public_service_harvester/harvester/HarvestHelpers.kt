@@ -6,36 +6,88 @@ import org.apache.jena.query.QueryExecutionFactory
 import org.apache.jena.query.QueryFactory
 import org.apache.jena.rdf.model.*
 import org.apache.jena.riot.Lang
-import org.apache.jena.sparql.vocabulary.FOAF
 import org.apache.jena.vocabulary.*
 import org.slf4j.LoggerFactory
 import java.util.*
 
 private val LOGGER = LoggerFactory.getLogger(Application::class.java)
 
+fun CatalogRDFModel.harvestDiff(dbTurtle: String?): Boolean =
+    if (dbTurtle == null) true
+    else !harvested.isIsomorphicWith(parseRDFResponse(dbTurtle, Lang.TURTLE, null))
+
 fun PublicServiceRDFModel.harvestDiff(dbTurtle: String?): Boolean =
     if (dbTurtle == null) true
     else !harvested.isIsomorphicWith(parseRDFResponse(dbTurtle, Lang.TURTLE, null))
 
-fun splitServicesFromRDF(harvested: Model, sourceURL: String): List<PublicServiceRDFModel> =
-    harvested.listResourcesWithServiceType()
-        .filterBlankNodeServices(sourceURL)
+fun splitCatalogsFromRDF(harvested: Model, allServices: List<PublicServiceRDFModel>, sourceURL: String): List<CatalogRDFModel> =
+    harvested.listResourcesWithProperty(RDF.type, DCAT.Catalog)
+        .toList()
+        .excludeBlankNodes(sourceURL)
+        .filter { it.hasProperty(DCATNO.containsService) }
         .map { resource ->
-
-            var model = resource.listProperties().toModel()
-            model.setNsPrefixes(harvested.nsPrefixMap)
-
-            resource.listProperties().toList()
+            val catalogServices: Set<String> = resource.listProperties(DCATNO.containsService)
+                .toList()
                 .filter { it.isResourceProperty() }
-                .forEach {
-                    model = model.recursiveAddNonPublicServiceResources(it.resource, 10)
-                }
+                .map { it.resource }
+                .excludeBlankNodes(sourceURL)
+                .map { it.uri }
+                .toSet()
 
-            PublicServiceRDFModel(
+            val catalogModelWithoutServices = resource.extractCatalogModel()
+
+            var catalogModel = catalogModelWithoutServices
+            allServices.filter { catalogServices.contains(it.resourceURI) }
+                .forEach { catalogModel = catalogModel.union(it.harvested) }
+
+            CatalogRDFModel(
                 resourceURI = resource.uri,
-                harvested = model
+                harvestedWithoutServices = catalogModelWithoutServices,
+                harvested = catalogModel,
+                services = catalogServices
             )
         }
+
+fun splitServicesFromRDF(harvested: Model, sourceURL: String): List<PublicServiceRDFModel> =
+    harvested.listResourcesWithServiceType()
+        .toList()
+        .excludeBlankNodes(sourceURL)
+        .map { serviceResource -> serviceResource.extractService() }
+
+fun Resource.extractCatalogModel(): Model {
+    val catalogModelWithoutServices = ModelFactory.createDefaultModel()
+    catalogModelWithoutServices.setNsPrefixes(model.nsPrefixMap)
+
+    listProperties()
+        .toList()
+        .forEach { catalogModelWithoutServices.addCatalogProperties(it) }
+
+    return catalogModelWithoutServices
+}
+
+fun Resource.extractService(): PublicServiceRDFModel {
+    var serviceModel = listProperties().toModel()
+    serviceModel = serviceModel.setNsPrefixes(model.nsPrefixMap)
+
+    listProperties().toList()
+        .filter { it.isResourceProperty() }
+        .forEach { serviceModel = serviceModel.recursiveAddNonPublicServiceResources(it.resource, 10) }
+
+    return PublicServiceRDFModel(
+        resourceURI = uri,
+        harvested = serviceModel,
+        isMemberOfAnyCatalog = isMemberOfAnyCatalog()
+    )
+}
+
+private fun Model.addCatalogProperties(property: Statement): Model =
+    when {
+        property.predicate != DCATNO.containsService && property.isResourceProperty() ->
+            add(property).recursiveAddNonPublicServiceResources(property.resource, 5)
+        property.predicate != DCATNO.containsService -> add(property)
+        property.isResourceProperty() && property.resource.isURIResource -> add(property)
+        else -> this
+    }
 
 private fun Model.listResourcesWithServiceType(): List<Resource> {
     val publicServices = listResourcesWithProperty(RDF.type, CPSV.PublicService)
@@ -47,14 +99,11 @@ private fun Model.listResourcesWithServiceType(): List<Resource> {
     return listOf(publicServices, cpsvnoServices).flatten()
 }
 
-private fun List<Resource>.filterBlankNodeServices(sourceURL: String): List<Resource> =
+private fun List<Resource>.excludeBlankNodes(sourceURL: String): List<Resource> =
     filter {
         if (it.isURIResource) true
         else {
-            LOGGER.error(
-                "Failed harvest of service for $sourceURL, unable to harvest blank node services",
-                Exception("unable to harvest blank node services")
-            )
+            LOGGER.warn("Blank node service or catalog filtered when harvesting $sourceURL")
             false
         }
     }
@@ -115,7 +164,15 @@ fun createIdFromUri(uri: String): String =
 
 data class PublicServiceRDFModel (
     val resourceURI: String,
-    val harvested: Model
+    val harvested: Model,
+    val isMemberOfAnyCatalog: Boolean
+)
+
+data class CatalogRDFModel(
+    val resourceURI: String,
+    val harvested: Model,
+    val harvestedWithoutServices: Model,
+    val services: Set<String>,
 )
 
 private fun Model.resourceShouldBeAdded(resource: Resource, types: List<RDFNode>): Boolean =
@@ -137,6 +194,16 @@ private fun Model.containsTriple(subj: String, pred: String, obj: String): Boole
         val query = QueryFactory.create(askQuery)
         return QueryExecutionFactory.create(query, this).execAsk()
     } catch (ex: Exception) { false }
+}
+
+private fun Resource.isMemberOfAnyCatalog(): Boolean {
+    val askQuery = """ASK {
+        ?catalog a <${DCAT.Catalog.uri}> .
+        ?catalog <${DCATNO.containsService.uri}> <$uri> .
+    }""".trimMargin()
+
+    val query = QueryFactory.create(askQuery)
+    return QueryExecutionFactory.create(query, model).execAsk()
 }
 
 class HarvestException(url: String) : Exception("Harvest failed for $url")

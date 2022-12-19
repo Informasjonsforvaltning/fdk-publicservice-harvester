@@ -5,6 +5,7 @@ import no.fdk.fdk_public_service_harvester.adapter.ServicesAdapter
 import no.fdk.fdk_public_service_harvester.repository.PublicServicesRepository
 import no.fdk.fdk_public_service_harvester.model.*
 import no.fdk.fdk_public_service_harvester.rdf.*
+import no.fdk.fdk_public_service_harvester.repository.CatalogRepository
 import no.fdk.fdk_public_service_harvester.service.TurtleService
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.rdf.model.ModelFactory
@@ -27,7 +28,8 @@ private const val dateFormat: String = "yyyy-MM-dd HH:mm:ss Z"
 @Service
 class PublicServicesHarvester(
     private val adapter: ServicesAdapter,
-    private val metaRepository: PublicServicesRepository,
+    private val serviceMetaRepository: PublicServicesRepository,
+    private val catalogMetaRepository: CatalogRepository,
     private val turtleService: TurtleService,
     private val applicationProperties: ApplicationProperties
 ) {
@@ -109,44 +111,88 @@ class PublicServicesHarvester(
         }
     }
 
-
-
     private fun updateDB(harvested: Model, sourceId: String, sourceURL: String, harvestDate: Calendar, forceUpdate: Boolean): HarvestReport {
-        val updatedServices = mutableListOf<PublicServiceMeta>()
-        splitServicesFromRDF(harvested, sourceURL)
-            .map { Pair(it, metaRepository.findByIdOrNull(it.resourceURI)) }
+        val allServices = splitServicesFromRDF(harvested, sourceURL)
+        return if (allServices.isEmpty()) {
+            LOGGER.warn("No services found in data harvested from $sourceURL")
+            HarvestReport(
+                id = sourceId,
+                url = sourceURL,
+                harvestError = true,
+                errorMessage = "No services found in data harvested from $sourceURL",
+                startTime = harvestDate.formatWithOsloTimeZone(),
+                endTime = formatNowWithOsloTimeZone()
+            )
+        } else {
+            val updatedServices = updateServices(allServices, harvestDate, forceUpdate)
+
+            val catalogs = splitCatalogsFromRDF(harvested, allServices, sourceURL)
+            val updatedCatalogs = updateCatalogs(catalogs, harvestDate, forceUpdate)
+
+            return HarvestReport(
+                id = sourceId,
+                url = sourceURL,
+                harvestError = false,
+                startTime = harvestDate.formatWithOsloTimeZone(),
+                endTime = formatNowWithOsloTimeZone(),
+                changedCatalogs = updatedCatalogs,
+                changedResources = updatedServices
+            )
+        }
+    }
+
+    private fun updateCatalogs(catalogs: List<CatalogRDFModel>, harvestDate: Calendar, forceUpdate: Boolean): List<FdkIdAndUri> =
+        catalogs
+            .map { Pair(it, catalogMetaRepository.findByIdOrNull(it.resourceURI)) }
             .filter { forceUpdate || it.first.hasChanges(it.second?.fdkId) }
-            .forEach {
-                val updatedMeta = it.first.updateMeta(harvestDate, it.second)
-                metaRepository.save(updatedMeta)
-                updatedServices.add(updatedMeta)
+            .map {
+                val updatedMeta = it.first.mapToMetaDBO(harvestDate, it.second)
+                catalogMetaRepository.save(updatedMeta)
 
-                turtleService.saveAsPublicService(it.first.harvested, updatedMeta.fdkId, false)
+                turtleService.saveAsCatalog(
+                    model = it.first.harvested,
+                    fdkId = updatedMeta.fdkId,
+                    withRecords = false
+                )
 
-                val fdkUri = "${applicationProperties.publicServiceHarvesterUri}/${updatedMeta.fdkId}"
+                val fdkUri = "${applicationProperties.publicServiceHarvesterUri}/catalogs/${updatedMeta.fdkId}"
+                it.first.services.forEach { serviceURI -> addIsPartOfToService(serviceURI, fdkUri) }
 
-                val metaModel = ModelFactory.createDefaultModel()
-                metaModel.createResource(fdkUri)
-                    .addProperty(RDF.type, DCAT.CatalogRecord)
-                    .addProperty(DCTerms.identifier, updatedMeta.fdkId)
-                    .addProperty(FOAF.primaryTopic, metaModel.createResource(updatedMeta.uri))
-                    .addProperty(DCTerms.issued, metaModel.createTypedLiteral(calendarFromTimestamp(updatedMeta.issued)))
-                    .addProperty(DCTerms.modified, metaModel.createTypedLiteral(harvestDate))
-
-                turtleService.saveAsPublicService(metaModel.union(it.first.harvested), updatedMeta.fdkId, true)
+                FdkIdAndUri(fdkId = updatedMeta.fdkId, uri = updatedMeta.uri)
             }
 
-        return HarvestReport(
-            id = sourceId,
-            url = sourceURL,
-            harvestError = false,
-            startTime = harvestDate.formatWithOsloTimeZone(),
-            endTime = formatNowWithOsloTimeZone(),
-            changedResources = updatedServices.map { FdkIdAndUri(fdkId = it.fdkId, uri = it.uri) }
+    private fun CatalogRDFModel.mapToMetaDBO(
+        harvestDate: Calendar,
+        dbMeta: CatalogMeta?
+    ): CatalogMeta {
+        val catalogURI = resourceURI
+        val fdkId = dbMeta?.fdkId ?: createIdFromUri(catalogURI)
+        val issued = dbMeta?.issued
+            ?.let { timestamp -> calendarFromTimestamp(timestamp) }
+            ?: harvestDate
+
+        return CatalogMeta(
+            uri = catalogURI,
+            fdkId = fdkId,
+            issued = issued.timeInMillis,
+            modified = harvestDate.timeInMillis,
+            services = services
         )
     }
 
-    private fun PublicServiceRDFModel.updateMeta(
+    private fun updateServices(services: List<PublicServiceRDFModel>, harvestDate: Calendar, forceUpdate: Boolean): List<FdkIdAndUri> =
+        services
+            .map { Pair(it, serviceMetaRepository.findByIdOrNull(it.resourceURI)) }
+            .filter { forceUpdate || it.first.hasChanges(it.second?.fdkId) }
+            .map {
+                val updatedMeta = it.first.mapToMetaDBO(harvestDate, it.second)
+                serviceMetaRepository.save(updatedMeta)
+                turtleService.saveAsPublicService(it.first.harvested, updatedMeta.fdkId, false)
+
+                FdkIdAndUri(fdkId = updatedMeta.fdkId, uri = it.first.resourceURI)
+            }
+
+    private fun PublicServiceRDFModel.mapToMetaDBO(
         harvestDate: Calendar,
         dbMeta: PublicServiceMeta?
     ): PublicServiceMeta {
@@ -163,9 +209,17 @@ class PublicServicesHarvester(
         )
     }
 
+    private fun addIsPartOfToService(serviceURI: String, catalogURI: String) =
+        serviceMetaRepository.findByIdOrNull(serviceURI)
+            ?.run { serviceMetaRepository.save(copy(isPartOf = catalogURI)) }
+
     private fun PublicServiceRDFModel.hasChanges(fdkId: String?): Boolean =
         if (fdkId == null) true
         else harvestDiff(turtleService.getPublicService(fdkId, withRecords = false))
+
+    private fun CatalogRDFModel.hasChanges(fdkId: String?): Boolean =
+        if (fdkId == null) true
+        else harvestDiff(turtleService.getCatalog(fdkId, withRecords = false))
 
     private fun formatNowWithOsloTimeZone(): String =
         ZonedDateTime.now(ZoneId.of("Europe/Oslo"))

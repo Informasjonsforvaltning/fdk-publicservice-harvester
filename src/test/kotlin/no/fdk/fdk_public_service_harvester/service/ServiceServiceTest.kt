@@ -22,13 +22,13 @@ class PublicServicesServiceTest {
 
         @Test
         fun responseIsometricWithEmptyModelForEmptyDB() {
-            whenever(turtleService.getUnion(true))
+            whenever(turtleService.getServiceUnion(true))
                 .thenReturn(null)
 
             val expected = responseReader.parseResponse("", "TURTLE")
 
-            val responseTurtle = service.getAll(Lang.TURTLE, true)
-            val responseJsonLD = service.getAll(Lang.JSONLD, true)
+            val responseTurtle = service.getAllServices(Lang.TURTLE, true)
+            val responseJsonLD = service.getAllServices(Lang.JSONLD, true)
 
             assertTrue(expected.isIsomorphicWith(responseReader.parseResponse(responseTurtle, "TURTLE")))
             assertTrue(expected.isIsomorphicWith(responseReader.parseResponse(responseJsonLD, "JSON-LD")))
@@ -36,17 +36,17 @@ class PublicServicesServiceTest {
 
         @Test
         fun getAllHandlesTurtleAndOtherRDF() {
-            whenever(turtleService.getUnion(true))
+            whenever(turtleService.getServiceUnion(true))
                 .thenReturn(javaClass.classLoader.getResource("all_services.ttl")!!.readText())
-            whenever(turtleService.getUnion(false))
+            whenever(turtleService.getServiceUnion(false))
                 .thenReturn(javaClass.classLoader.getResource("no_meta_all_services.ttl")!!.readText())
 
             val expected = responseReader.parseFile("all_services.ttl", "TURTLE")
             val expectedNoRecords = responseReader.parseFile("no_meta_all_services.ttl", "TURTLE")
 
-            val responseTurtle = service.getAll(Lang.TURTLE, false)
-            val responseN3 = service.getAll(Lang.N3, true)
-            val responseNTriples = service.getAll(Lang.NTRIPLES, true)
+            val responseTurtle = service.getAllServices(Lang.TURTLE, false)
+            val responseN3 = service.getAllServices(Lang.N3, true)
+            val responseNTriples = service.getAllServices(Lang.NTRIPLES, true)
 
             assertTrue(expectedNoRecords.isIsomorphicWith(responseReader.parseResponse(responseTurtle, "TURTLE")))
             assertTrue(expected.isIsomorphicWith(responseReader.parseResponse(responseN3, "N3")))

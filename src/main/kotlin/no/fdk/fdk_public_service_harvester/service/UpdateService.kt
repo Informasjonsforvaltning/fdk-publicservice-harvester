@@ -3,7 +3,11 @@ package no.fdk.fdk_public_service_harvester.service
 import no.fdk.fdk_public_service_harvester.configuration.ApplicationProperties
 import no.fdk.fdk_public_service_harvester.harvester.calendarFromTimestamp
 import no.fdk.fdk_public_service_harvester.model.*
+import no.fdk.fdk_public_service_harvester.rdf.DCATNO
+import no.fdk.fdk_public_service_harvester.rdf.containsTriple
 import no.fdk.fdk_public_service_harvester.rdf.parseRDFResponse
+import no.fdk.fdk_public_service_harvester.rdf.safeAddProperty
+import no.fdk.fdk_public_service_harvester.repository.CatalogRepository
 import no.fdk.fdk_public_service_harvester.repository.PublicServicesRepository
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.rdf.model.ModelFactory
@@ -20,46 +24,88 @@ private val LOGGER = LoggerFactory.getLogger(UpdateService::class.java)
 @Service
 class UpdateService (
     private val applicationProperties: ApplicationProperties,
-    private val metaRepository: PublicServicesRepository,
+    private val serviceMetaRepository: PublicServicesRepository,
+    private val catalogMetaRepository: CatalogRepository,
     private val turtleService: TurtleService
 ) {
 
-    fun updateUnionModel() {
-        var unionModel = ModelFactory.createDefaultModel()
-        var unionModelNoRecords = ModelFactory.createDefaultModel()
+    fun updateUnionModels() {
+        var serviceUnion = ModelFactory.createDefaultModel()
+        var serviceUnionNoRecords = ModelFactory.createDefaultModel()
 
-        metaRepository.findAll()
+        serviceMetaRepository.findAll()
             .forEach {
                 turtleService.getPublicService(it.fdkId, withRecords = true)
                     ?.let { dboTurtle -> parseRDFResponse(dboTurtle, Lang.TURTLE, null) }
-                    ?.run { unionModel = unionModel.union(this) }
+                    ?.run { serviceUnion = serviceUnion.union(this) }
 
                 turtleService.getPublicService(it.fdkId, withRecords = false)
                     ?.let { dboTurtle -> parseRDFResponse(dboTurtle, Lang.TURTLE, null) }
-                    ?.run { unionModelNoRecords = unionModelNoRecords.union(this) }
+                    ?.run { serviceUnionNoRecords = serviceUnionNoRecords.union(this) }
             }
 
-        turtleService.saveAsUnion(unionModel, true)
-        turtleService.saveAsUnion(unionModelNoRecords, false)
+        turtleService.saveAsServiceUnion(serviceUnion, true)
+        turtleService.saveAsServiceUnion(serviceUnionNoRecords, false)
+
+        var catalogUnion = ModelFactory.createDefaultModel()
+        var catalogUnionNoRecords = ModelFactory.createDefaultModel()
+
+        catalogMetaRepository.findAll()
+            .filter { it.services.isNotEmpty() }
+            .forEach {
+                turtleService.getCatalog(it.fdkId, withRecords = true)
+                    ?.let { turtle -> parseRDFResponse(turtle, Lang.TURTLE, null) }
+                    ?.run { catalogUnion = catalogUnion.union(this) }
+
+                turtleService.getCatalog(it.fdkId, withRecords = false)
+                    ?.let { turtle -> parseRDFResponse(turtle, Lang.TURTLE, null) }
+                    ?.run { catalogUnionNoRecords = catalogUnionNoRecords.union(this) }
+            }
+
+        turtleService.saveAsCatalogUnion(catalogUnion, true)
+        turtleService.saveAsCatalogUnion(catalogUnionNoRecords, false)
     }
 
     fun updateMetaData() {
-        LOGGER.info("Updating catalog records for all public services.")
-        metaRepository.findAll()
-            .forEach { event ->
-                val catalogMeta = event.createMetaModel()
+        serviceMetaRepository.findAll()
+            .forEach { service ->
+                val serviceMeta = service.createMetaModel()
 
-                turtleService.getPublicService(event.fdkId, withRecords = false)
-                    ?.let { eventNoRecords -> parseRDFResponse(eventNoRecords, Lang.TURTLE, null) }
-                    ?.let { eventModelNoRecords -> catalogMeta.union(eventModelNoRecords) }
-                    ?.run { turtleService.saveAsPublicService(this, event.fdkId, withRecords = true) }
+                turtleService.getPublicService(service.fdkId, withRecords = false)
+                    ?.let { serviceNoRecords -> parseRDFResponse(serviceNoRecords, Lang.TURTLE, null) }
+                    ?.let { serviceModelNoRecords -> serviceMeta.union(serviceModelNoRecords) }
+                    ?.run { turtleService.saveAsPublicService(this, fdkId = service.fdkId, withRecords = true) }
             }
 
-        updateUnionModel()
+        catalogMetaRepository.findAll()
+            .forEach { catalog ->
+                val catalogNoRecords = turtleService.getCatalog(catalog.fdkId, withRecords = false)
+                    ?.let { parseRDFResponse(it, Lang.TURTLE, null) }
+
+                if (catalogNoRecords != null) {
+                    val fdkCatalogURI = "${applicationProperties.publicServiceHarvesterUri}/catalogs/${catalog.fdkId}"
+                    var catalogMeta = catalog.createMetaModel()
+
+                    serviceMetaRepository.findAllByIsPartOf(fdkCatalogURI)
+                        .filter { it.catalogContainsService(catalog.uri, catalogNoRecords) }
+                        .forEach { service ->
+                            val serviceMeta = service.createMetaModel()
+                            catalogMeta = catalogMeta.union(serviceMeta)
+                        }
+
+                    turtleService.saveAsCatalog(
+                        catalogMeta.union(catalogNoRecords),
+                        fdkId = catalog.fdkId,
+                        withRecords = true
+                    )
+                }
+            }
+
+        updateUnionModels()
     }
 
-    private fun PublicServiceMeta.createMetaModel(): Model {
-        val fdkUri = "${applicationProperties.publicServiceHarvesterUri}/$fdkId"
+    private fun CatalogMeta.createMetaModel(): Model {
+        val fdkUri = "${applicationProperties.publicServiceHarvesterUri}/catalogs/$fdkId"
 
         val metaModel = ModelFactory.createDefaultModel()
 
@@ -72,4 +118,23 @@ class UpdateService (
 
         return metaModel
     }
+
+    private fun PublicServiceMeta.createMetaModel(): Model {
+        val fdkUri = "${applicationProperties.publicServiceHarvesterUri}/$fdkId"
+
+        val metaModel = ModelFactory.createDefaultModel()
+
+        metaModel.createResource(fdkUri)
+            .addProperty(RDF.type, DCAT.CatalogRecord)
+            .addProperty(DCTerms.identifier, fdkId)
+            .addProperty(FOAF.primaryTopic, metaModel.createResource(uri))
+            .safeAddProperty(DCTerms.isPartOf, isPartOf)
+            .addProperty(DCTerms.issued, metaModel.createTypedLiteral(calendarFromTimestamp(issued)))
+            .addProperty(DCTerms.modified, metaModel.createTypedLiteral(calendarFromTimestamp(modified)))
+
+        return metaModel
+    }
+
+    private fun PublicServiceMeta.catalogContainsService(catalogURI: String, catalogModel: Model): Boolean =
+        catalogModel.containsTriple("<$catalogURI>", "<${DCATNO.containsService.uri}>", "<$uri>")
 }

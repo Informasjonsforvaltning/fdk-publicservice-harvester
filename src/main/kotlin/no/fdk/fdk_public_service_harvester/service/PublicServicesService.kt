@@ -9,11 +9,11 @@ import org.springframework.stereotype.Service
 @Service
 class PublicServicesService(private val turtleService: TurtleService) {
 
-    fun getAll(returnType: Lang, withRecords: Boolean): String =
-        turtleService.getUnion(withRecords)
+    fun getAllServices(returnType: Lang, withRecords: Boolean): String =
+        turtleService.getServiceUnion(withRecords)
             ?.let {
                 if (returnType == Lang.TURTLE) it
-                else parseRDFResponse(it, Lang.TURTLE, null)?.createRDFResponse(returnType)
+                else parseRDFResponse(it, Lang.TURTLE, null).createRDFResponse(returnType)
             }
             ?: ModelFactory.createDefaultModel().createRDFResponse(returnType)
 
@@ -21,7 +21,22 @@ class PublicServicesService(private val turtleService: TurtleService) {
         turtleService.getPublicService(id, withRecords)
             ?.let {
                 if (returnType == Lang.TURTLE) it
-                else parseRDFResponse(it, Lang.TURTLE, null)?.createRDFResponse(returnType)
+                else parseRDFResponse(it, Lang.TURTLE, null).createRDFResponse(returnType)
+            }
+
+    fun getCatalogs(returnType: Lang, withRecords: Boolean): String =
+        turtleService.getCatalogUnion(withRecords)
+            ?.let {
+                if (returnType == Lang.TURTLE) it
+                else parseRDFResponse(it, Lang.TURTLE, null).createRDFResponse(returnType)
+            }
+            ?: ModelFactory.createDefaultModel().createRDFResponse(returnType)
+
+    fun getCatalogById(id: String, returnType: Lang, withRecords: Boolean): String? =
+        turtleService.getCatalog(id, withRecords)
+            ?.let {
+                if (returnType == Lang.TURTLE) it
+                else parseRDFResponse(it, Lang.TURTLE, null).createRDFResponse(returnType)
             }
 
 }

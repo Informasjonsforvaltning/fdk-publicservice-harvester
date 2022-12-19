@@ -15,6 +15,20 @@ data class PublicServiceMeta (
     @Indexed(unique = true)
     val fdkId: String,
 
+    val isPartOf: String? = null,
+    val issued: Long,
+    val modified: Long
+)
+
+@Document(collection = "catalogMeta")
+data class CatalogMeta(
+    @Id
+    val uri: String,
+
+    @Indexed(unique = true)
+    val fdkId: String,
+
+    val services: Set<String>,
     val issued: Long,
     val modified: Long
 )
@@ -33,6 +47,18 @@ data class PublicServiceTurtle(
 
 @Document(collection = "fdkServiceTurtle")
 data class FDKPublicServiceTurtle(
+    @Id override val id: String,
+    override val turtle: String
+) : TurtleDBO()
+
+@Document(collection = "catalogTurtle")
+data class CatalogTurtle(
+    @Id override val id: String,
+    override val turtle: String
+) : TurtleDBO()
+
+@Document(collection = "fdkCatalogTurtle")
+data class FDKCatalogTurtle(
     @Id override val id: String,
     override val turtle: String
 ) : TurtleDBO()
