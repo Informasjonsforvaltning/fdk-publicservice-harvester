@@ -24,6 +24,7 @@
 <http://localhost:5000/public-services/1fc38c3c-1c86-3161-a9a7-e443fd94d413>
         a                  dcat:CatalogRecord ;
         dct:identifier     "1fc38c3c-1c86-3161-a9a7-e443fd94d413" ;
+        dct:isPartOf    <http://localhost:5000/public-services/catalogs/4d2c9e29-2f9a-304f-9e48-34e30a36d068> ;
         dct:issued         "2020-10-05T13:15:39.831Z"^^xsd:dateTime ;
         dct:modified       "2020-10-05T13:15:39.831Z"^^xsd:dateTime ;
         foaf:primaryTopic  <https://raw.githubusercontent.com/Informasjonsforvaltning/cpsv-ap-no/develop/examples/exTjenesteDummy.ttl> .

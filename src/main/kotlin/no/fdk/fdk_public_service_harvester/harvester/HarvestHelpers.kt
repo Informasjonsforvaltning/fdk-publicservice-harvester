@@ -1,6 +1,7 @@
 package no.fdk.fdk_public_service_harvester.harvester
 
 import no.fdk.fdk_public_service_harvester.Application
+import no.fdk.fdk_public_service_harvester.model.Organization
 import no.fdk.fdk_public_service_harvester.rdf.*
 import org.apache.jena.query.QueryExecutionFactory
 import org.apache.jena.query.QueryFactory
@@ -20,8 +21,9 @@ fun PublicServiceRDFModel.harvestDiff(dbTurtle: String?): Boolean =
     if (dbTurtle == null) true
     else !harvested.isIsomorphicWith(parseRDFResponse(dbTurtle, Lang.TURTLE, null))
 
-fun splitCatalogsFromRDF(harvested: Model, allServices: List<PublicServiceRDFModel>, sourceURL: String): List<CatalogRDFModel> =
-    harvested.listResourcesWithProperty(RDF.type, DCAT.Catalog)
+fun splitCatalogsFromRDF(harvested: Model, allServices: List<PublicServiceRDFModel>,
+                         sourceURL: String, organization: Organization?): List<CatalogRDFModel> {
+    val harvestedCatalogs = harvested.listResourcesWithProperty(RDF.type, DCAT.Catalog)
         .toList()
         .excludeBlankNodes(sourceURL)
         .filter { it.hasProperty(DCATNO.containsService) }
@@ -47,6 +49,13 @@ fun splitCatalogsFromRDF(harvested: Model, allServices: List<PublicServiceRDFMod
                 services = catalogServices
             )
         }
+
+    return harvestedCatalogs.plus(generatedCatalog(
+        allServices.filterNot { it.isMemberOfAnyCatalog },
+        sourceURL,
+        organization)
+    )
+}
 
 fun splitServicesFromRDF(harvested: Model, sourceURL: String): List<PublicServiceRDFModel> =
     harvested.listResourcesWithServiceType()
@@ -131,6 +140,79 @@ private fun Model.addAgentsAssociatedWithParticipation(resource: Resource): Mode
     return this
 }
 
+private fun generatedCatalog(
+    services: List<PublicServiceRDFModel>,
+    sourceURL: String,
+    organization: Organization?
+): CatalogRDFModel {
+    val serviceURIs = services.map { it.resourceURI }.toSet()
+    val generatedCatalogURI = "$sourceURL#GeneratedCatalog"
+    val catalogModelWithoutServices = createModelForHarvestSourceCatalog(generatedCatalogURI, serviceURIs, organization)
+
+    var catalogModel = catalogModelWithoutServices
+    services.forEach { catalogModel = catalogModel.union(it.harvested) }
+
+    return CatalogRDFModel(
+        resourceURI = generatedCatalogURI,
+        harvestedWithoutServices = catalogModelWithoutServices,
+        harvested = catalogModel,
+        services = serviceURIs
+    )
+}
+
+private fun createModelForHarvestSourceCatalog(
+    catalogURI: String,
+    services: Set<String>,
+    organization: Organization?
+): Model {
+    val catalogModel = ModelFactory.createDefaultModel()
+    catalogModel.createResource(catalogURI)
+        .addProperty(RDF.type, DCAT.Catalog)
+        .addPublisherForGeneratedCatalog(organization?.uri)
+        .addLabelForGeneratedCatalog(organization)
+        .addServicesForGeneratedCatalog(services)
+
+    return catalogModel
+}
+
+private fun Resource.addPublisherForGeneratedCatalog(publisherURI: String?): Resource {
+    if (publisherURI != null) {
+        addProperty(
+            DCTerms.publisher,
+            ResourceFactory.createResource(publisherURI)
+        )
+    }
+
+    return this
+}
+
+private fun Resource.addLabelForGeneratedCatalog(organization: Organization?): Resource {
+    val nb: String? = organization?.prefLabel?.nb ?: organization?.name
+    if (!nb.isNullOrBlank()) {
+        val label = model.createLiteral("$nb - Tjenestekatalog", "nb")
+        addProperty(RDFS.label, label)
+    }
+
+    val nn: String? = organization?.prefLabel?.nn ?: organization?.name
+    if (!nb.isNullOrBlank()) {
+        val label = model.createLiteral("$nn - Tjenestekatalog", "nn")
+        addProperty(RDFS.label, label)
+    }
+
+    val en: String? = organization?.prefLabel?.en ?: organization?.name
+    if (!en.isNullOrBlank()) {
+        val label = model.createLiteral("$en - Service catalog", "en")
+        addProperty(RDFS.label, label)
+    }
+
+    return this
+}
+
+private fun Resource.addServicesForGeneratedCatalog(services: Set<String>): Resource {
+    services.forEach { addProperty(DCATNO.containsService, model.createResource(it)) }
+    return this
+}
+
 private fun Model.recursiveAddNonPublicServiceResources(resource: Resource, recursiveCount: Int): Model {
     val newCount = recursiveCount - 1
     val types = resource.listProperties(RDF.type)
@@ -174,6 +256,9 @@ data class CatalogRDFModel(
     val harvestedWithoutServices: Model,
     val services: Set<String>,
 )
+
+fun List<PublicServiceRDFModel>.containsFreeServices(): Boolean =
+    firstOrNull { !it.isMemberOfAnyCatalog } != null
 
 private fun Model.resourceShouldBeAdded(resource: Resource, types: List<RDFNode>): Boolean =
     when {

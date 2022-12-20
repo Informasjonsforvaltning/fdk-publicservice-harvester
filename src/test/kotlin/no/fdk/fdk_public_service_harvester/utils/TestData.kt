@@ -23,6 +23,7 @@ const val SERVICE_ID_3 = "1fc38c3c-1c86-3161-a9a7-e443fd94d413"
 const val SERVICE_ID_4 = "ef4ca382-ee65-3a92-be9e-40fd93da53bc"
 const val SERVICE_ID_5 = "7baa248b-1a27-3c46-80cf-889882d6b894"
 
+const val CATALOG_ID_0 = "4d2c9e29-2f9a-304f-9e48-34e30a36d068"
 const val CATALOG_ID_1 = "b7c6d34c-624d-3c72-9e30-2b608e433ad7"
 
 val TEST_HARVEST_DATE: Calendar = Calendar.Builder().setTimeZone(TimeZone.getTimeZone("UTC")).setDate(2020, 9, 5).setTimeOfDay(13, 15, 39, 831).build()

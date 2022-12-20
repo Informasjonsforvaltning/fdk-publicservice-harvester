@@ -11,6 +11,7 @@ private val responseReader = TestResponseReader()
 val SERVICE_META_0 = PublicServiceMeta(
     uri = "http://public-service-publisher.fellesdatakatalog.digdir.no/services/1",
     fdkId = SERVICE_ID_0,
+    isPartOf ="http://localhost:5000/public-services/catalogs/4d2c9e29-2f9a-304f-9e48-34e30a36d068",
     issued = TEST_HARVEST_DATE.timeInMillis,
     modified = TEST_HARVEST_DATE.timeInMillis
 )
@@ -28,6 +29,7 @@ val SERVICE_TURTLE_0_NO_META = PublicServiceTurtle(
 val SERVICE_META_1 = PublicServiceMeta(
     uri = "http://public-service-publisher.fellesdatakatalog.digdir.no/services/2",
     fdkId = SERVICE_ID_1,
+    isPartOf ="http://localhost:5000/public-services/catalogs/4d2c9e29-2f9a-304f-9e48-34e30a36d068",
     issued = TEST_HARVEST_DATE.timeInMillis,
     modified = TEST_HARVEST_DATE.timeInMillis
 )
@@ -45,6 +47,7 @@ val SERVICE_TURTLE_1_NO_META = PublicServiceTurtle(
 val SERVICE_META_2 = PublicServiceMeta(
     uri = "http://public-service-publisher.fellesdatakatalog.digdir.no/services/3",
     fdkId = SERVICE_ID_2,
+    isPartOf ="http://localhost:5000/public-services/catalogs/4d2c9e29-2f9a-304f-9e48-34e30a36d068",
     issued = TEST_HARVEST_DATE.timeInMillis,
     modified = TEST_HARVEST_DATE.timeInMillis
 )
@@ -62,6 +65,7 @@ val SERVICE_TURTLE_2_NO_META = PublicServiceTurtle(
 val SERVICE_META_3 = PublicServiceMeta(
     uri = "https://raw.githubusercontent.com/Informasjonsforvaltning/cpsv-ap-no/develop/examples/exTjenesteDummy.ttl",
     fdkId = SERVICE_ID_3,
+    isPartOf ="http://localhost:5000/public-services/catalogs/4d2c9e29-2f9a-304f-9e48-34e30a36d068",
     issued = TEST_HARVEST_DATE.timeInMillis,
     modified = TEST_HARVEST_DATE.timeInMillis
 )
@@ -80,6 +84,16 @@ val SERVICE_META_5 = PublicServiceMeta(
     isPartOf = "http://localhost:5000/public-services/catalogs/$CATALOG_ID_1",
     issued = TEST_HARVEST_DATE.timeInMillis,
     modified = TEST_HARVEST_DATE.timeInMillis
+)
+
+val CATALOG_META_0 = CatalogMeta(
+    uri="http://localhost:5000/fdk-public-service-publisher.ttl#GeneratedCatalog",
+    fdkId= CATALOG_ID_0,
+    services=setOf(
+        SERVICE_META_0.uri, SERVICE_META_1.uri,
+        SERVICE_META_2.uri, SERVICE_META_3.uri),
+    issued=1601903739831,
+    modified=1601903739831
 )
 
 val CATALOG_META_1 = CatalogMeta(
@@ -137,12 +151,22 @@ val UNION_DATA_NO_META = PublicServiceTurtle(
 
 val CATALOG_UNION_DATA = FDKPublicServiceTurtle(
     id = UNION_ID,
-    turtle = gzip(responseReader.readFile("catalog_1.ttl"))
+    turtle = gzip(responseReader.readFile("all_catalogs.ttl"))
 )
 
 val CATALOG_UNION_DATA_NO_META = FDKPublicServiceTurtle(
     id = UNION_ID,
-    turtle = gzip(responseReader.readFile("harvest_response_1.ttl"))
+    turtle = gzip(responseReader.readFile("no_meta_all_catalogs.ttl"))
+)
+
+val CATALOG_0 = FDKPublicServiceTurtle(
+    id = CATALOG_ID_0,
+    turtle = gzip(responseReader.readFile("catalog_0.ttl"))
+)
+
+val CATALOG_0_NO_META = FDKPublicServiceTurtle(
+    id = CATALOG_ID_0,
+    turtle = gzip(responseReader.readFile("no_meta_catalog_0.ttl"))
 )
 
 val CATALOG_1 = FDKPublicServiceTurtle(
@@ -175,14 +199,14 @@ fun metaDBPopulation(): List<Document> =
         .map { it.mapDBO() }
 
 fun metaCatalogPopulation(): List<Document> =
-    listOf(CATALOG_META_1)
+    listOf(CATALOG_META_0, CATALOG_META_1)
         .map { it.mapDBO() }
 
 fun fdkCatalogTurtleDBPopulation(): List<Document> =
-    listOf(CATALOG_1, CATALOG_UNION_DATA).map { it.mapDBO() }
+    listOf(CATALOG_0, CATALOG_1, CATALOG_UNION_DATA).map { it.mapDBO() }
 
 fun catalogTurtleDBPopulation(): List<Document> =
-    listOf(CATALOG_1_NO_META, CATALOG_UNION_DATA_NO_META).map { it.mapDBO() }
+    listOf(CATALOG_0_NO_META, CATALOG_1_NO_META, CATALOG_UNION_DATA_NO_META).map { it.mapDBO() }
 
 private fun PublicServiceMeta.mapDBO(): Document =
     Document()

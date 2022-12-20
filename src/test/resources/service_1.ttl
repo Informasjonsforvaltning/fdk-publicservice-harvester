@@ -16,6 +16,7 @@
 <http://localhost:5000/public-services/6ce4e524-3226-3591-ad99-c026705d4259>
         a                  dcat:CatalogRecord ;
         dct:identifier     "6ce4e524-3226-3591-ad99-c026705d4259" ;
+        dct:isPartOf    <http://localhost:5000/public-services/catalogs/4d2c9e29-2f9a-304f-9e48-34e30a36d068> ;
         dct:issued         "2020-10-05T13:15:39.831Z"^^xsd:dateTime ;
         dct:modified       "2020-10-05T13:15:39.831Z"^^xsd:dateTime ;
         foaf:primaryTopic  <http://public-service-publisher.fellesdatakatalog.digdir.no/services/2> .

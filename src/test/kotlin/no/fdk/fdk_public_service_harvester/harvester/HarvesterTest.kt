@@ -1,7 +1,9 @@
 package no.fdk.fdk_public_service_harvester.harvester
 
+import no.fdk.fdk_public_service_harvester.adapter.OrganizationsAdapter
 import no.fdk.fdk_public_service_harvester.adapter.ServicesAdapter
 import no.fdk.fdk_public_service_harvester.configuration.ApplicationProperties
+import no.fdk.fdk_public_service_harvester.model.CatalogMeta
 import no.fdk.fdk_public_service_harvester.model.FdkIdAndUri
 import no.fdk.fdk_public_service_harvester.model.HarvestReport
 import no.fdk.fdk_public_service_harvester.model.PublicServiceMeta
@@ -25,8 +27,9 @@ class HarvesterTest {
     private val turtleService: TurtleService = mock()
     private val valuesMock: ApplicationProperties = mock()
     private val adapter: ServicesAdapter = mock()
+    private val orgAdapter: OrganizationsAdapter = mock()
 
-    private val harvester = PublicServicesHarvester(adapter, metaRepository, catalogMetaRepository, turtleService, valuesMock)
+    private val harvester = PublicServicesHarvester(adapter, orgAdapter, metaRepository, catalogMetaRepository, turtleService, valuesMock)
     private val responseReader = TestResponseReader()
 
     @Test
@@ -56,7 +59,19 @@ class HarvesterTest {
 
         argumentCaptor<PublicServiceMeta>().apply {
             verify(metaRepository, times(4)).save(capture())
-            assertEquals(listOf(SERVICE_META_0, SERVICE_META_1, SERVICE_META_2, SERVICE_META_3), allValues)
+            assertEquals(listOf(SERVICE_META_0.copy(isPartOf = null), SERVICE_META_1.copy(isPartOf = null), SERVICE_META_2.copy(isPartOf = null), SERVICE_META_3.copy(isPartOf = null)), allValues)
+        }
+
+        argumentCaptor<CatalogMeta>().apply {
+            verify(catalogMetaRepository, times(1)).save(capture())
+            assertEquals(listOf(CATALOG_META_0), allValues)
+        }
+
+        argumentCaptor<Model, String, Boolean>().apply {
+            verify(turtleService, times(1)).saveAsCatalog(first.capture(), second.capture(), third.capture())
+            assertTrue(checkIfIsomorphicAndPrintDiff(first.allValues[0], responseReader.parseFile("no_meta_catalog_0.ttl", "TURTLE"), "harvestDataSourceSavedWhenDBIsEmpty-catalog"))
+            assertEquals(listOf(CATALOG_ID_0), second.allValues)
+            Assertions.assertEquals(listOf(false), third.allValues)
         }
 
         val expectedReport = HarvestReport(
@@ -66,6 +81,7 @@ class HarvesterTest {
             harvestError=false,
             startTime = "2020-10-05 15:15:39 +0200",
             endTime = report!!.endTime,
+            changedCatalogs = listOf(FdkIdAndUri(fdkId=CATALOG_ID_0, uri=CATALOG_META_0.uri)),
             changedResources = listOf(
                 FdkIdAndUri(fdkId= SERVICE_ID_0, uri= SERVICE_META_0.uri), FdkIdAndUri(fdkId= SERVICE_ID_1, uri= SERVICE_META_1.uri),
                 FdkIdAndUri(fdkId= SERVICE_ID_2, uri= SERVICE_META_2.uri), FdkIdAndUri(fdkId= SERVICE_ID_3, uri= SERVICE_META_3.uri))
@@ -125,6 +141,7 @@ class HarvesterTest {
             harvestError=false,
             startTime = "2020-10-05 15:15:39 +0200",
             endTime = report!!.endTime,
+            changedCatalogs = listOf(FdkIdAndUri(fdkId=CATALOG_ID_0, uri=CATALOG_META_0.uri)),
             changedResources=listOf(
                 FdkIdAndUri(fdkId="d5d0c07c-c14f-3741-9aa3-126960958cf0", uri="http://public-service-publisher.fellesdatakatalog.digdir.no/services/1"),
                 FdkIdAndUri(fdkId="6ce4e524-3226-3591-ad99-c026705d4259", uri="http://public-service-publisher.fellesdatakatalog.digdir.no/services/2"),
@@ -151,6 +168,8 @@ class HarvesterTest {
             .thenReturn(Optional.of(SERVICE_META_2))
         whenever(metaRepository.findById(SERVICE_META_3.uri))
             .thenReturn(Optional.of(SERVICE_META_3))
+        whenever(catalogMetaRepository.findById(CATALOG_META_0.uri))
+            .thenReturn(Optional.of(CATALOG_META_0))
         whenever(turtleService.getPublicService(SERVICE_ID_0, false))
             .thenReturn(responseReader.readFile("no_meta_service_0_diff.ttl"))
         whenever(turtleService.getPublicService(SERVICE_ID_1, false))
@@ -159,6 +178,8 @@ class HarvesterTest {
             .thenReturn(responseReader.readFile("no_meta_service_2.ttl"))
         whenever(turtleService.getPublicService(SERVICE_ID_3, false))
             .thenReturn(responseReader.readFile("no_meta_service_3.ttl"))
+        whenever(turtleService.getCatalog(CATALOG_ID_0, false))
+            .thenReturn(responseReader.readFile("no_meta_catalog_0_diff.ttl"))
 
         val report = harvester.harvestServices(TEST_HARVEST_SOURCE, NEW_TEST_HARVEST_DATE, false)
 
@@ -187,6 +208,7 @@ class HarvesterTest {
             harvestError=false,
             startTime = "2020-10-15 13:52:16 +0200",
             endTime = report!!.endTime,
+            changedCatalogs = listOf(FdkIdAndUri(fdkId=CATALOG_ID_0, uri=CATALOG_META_0.uri)),
             changedResources = listOf(FdkIdAndUri(fdkId="d5d0c07c-c14f-3741-9aa3-126960958cf0", uri="http://public-service-publisher.fellesdatakatalog.digdir.no/services/1"))
         )
 
@@ -235,9 +257,9 @@ class HarvesterTest {
         }
 
         verify(turtleService, times(2)).saveAsPublicService(any(), any(), any())
-        verify(turtleService, times(1)).saveAsCatalog(any(), any(), any())
+        verify(turtleService, times(2)).saveAsCatalog(any(), any(), any())
         verify(metaRepository, times(2)).save(any())
-        verify(catalogMetaRepository, times(1)).save(any())
+        verify(catalogMetaRepository, times(2)).save(any())
 
         val expectedReport = HarvestReport(
             id="test-source",
@@ -246,7 +268,9 @@ class HarvesterTest {
             harvestError=false,
             startTime = "2020-10-05 15:15:39 +0200",
             endTime = report!!.endTime,
-            changedCatalogs=listOf(FdkIdAndUri(fdkId=CATALOG_ID_1, uri="http://test.no/catalogs/0")),
+            changedCatalogs=listOf(
+                FdkIdAndUri(fdkId=CATALOG_ID_1, uri="http://test.no/catalogs/0"),
+                FdkIdAndUri(fdkId="4d2c9e29-2f9a-304f-9e48-34e30a36d068", uri="http://localhost:5000/fdk-public-service-publisher.ttl#GeneratedCatalog")),
             changedResources = listOf(
                 FdkIdAndUri(fdkId="ef4ca382-ee65-3a92-be9e-40fd93da53bc", uri="http://test.no/services/0"),
                 FdkIdAndUri(fdkId="7baa248b-1a27-3c46-80cf-889882d6b894", uri="http://test.no/services/1"))
