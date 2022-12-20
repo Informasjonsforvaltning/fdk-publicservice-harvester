@@ -17,6 +17,7 @@ spring:
     jwk-set-uri: ${SSO_HOST:https://sso.staging.fellesdatakatalog.digdir.no}/auth/realms/fdk/protocol/openid-connect/certs
     issuer-uri: ${SSO_HOST:https://sso.staging.fellesdatakatalog.digdir.no}/auth/realms/fdk
 application:
+  organizationsUri: ${ORGANIZATION_CATALOG_URI:https://organization-catalog.staging.fellesdatakatalog.digdir.no}/organizations
   publicServiceHarvesterUri: ${FDK_BASE_URI:https://staging.fellesdatakatalog.digdir.no}/public-services
   harvestAdminRootUrl: ${HARVEST_ADMIN_ROOT_URL:http://new-harvest-admin:8080}
 management:
@@ -58,5 +59,6 @@ spring:
     username: admin
     password: admin
 application:
+  organizationsUri: http://localhost:5000/organizations
   publicServiceHarvesterUri: http://localhost:5000/public-services
   harvestAdminRootUrl: http://localhost:5000

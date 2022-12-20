@@ -1,5 +1,6 @@
 package no.fdk.fdk_public_service_harvester.harvester
 
+import no.fdk.fdk_public_service_harvester.adapter.OrganizationsAdapter
 import no.fdk.fdk_public_service_harvester.configuration.ApplicationProperties
 import no.fdk.fdk_public_service_harvester.adapter.ServicesAdapter
 import no.fdk.fdk_public_service_harvester.repository.PublicServicesRepository
@@ -28,6 +29,7 @@ private const val dateFormat: String = "yyyy-MM-dd HH:mm:ss Z"
 @Service
 class PublicServicesHarvester(
     private val adapter: ServicesAdapter,
+    private val orgAdapter: OrganizationsAdapter,
     private val serviceMetaRepository: PublicServicesRepository,
     private val catalogMetaRepository: CatalogRepository,
     private val turtleService: TurtleService,
@@ -70,7 +72,7 @@ class PublicServicesHarvester(
                     }
                     else -> updateIfChanged(
                         parseRDFResponse(adapter.fetchServices(source), jenaWriterType, source.url),
-                        source.id, source.url, harvestDate, forceUpdate
+                        source.id, source.url, harvestDate, source.publisherId, forceUpdate
                     )
                 }
             } catch (ex: Exception) {
@@ -89,7 +91,8 @@ class PublicServicesHarvester(
             null
         }
 
-    private fun updateIfChanged(harvested: Model, sourceId: String, sourceURL: String, harvestDate: Calendar, forceUpdate: Boolean): HarvestReport {
+    private fun updateIfChanged(harvested: Model, sourceId: String, sourceURL: String, harvestDate: Calendar,
+                                publisherId: String?, forceUpdate: Boolean): HarvestReport {
         val dbData = turtleService
             .getHarvestSource(sourceURL)
             ?.let { parseRDFResponse(it, Lang.TURTLE, null) }
@@ -107,11 +110,12 @@ class PublicServicesHarvester(
             LOGGER.info("Changes detected, saving data from $sourceURL and updating FDK meta data")
             turtleService.saveAsHarvestSource(harvested, sourceURL)
 
-            updateDB(harvested, sourceId, sourceURL, harvestDate, forceUpdate)
+            updateDB(harvested, sourceId, sourceURL, harvestDate, publisherId, forceUpdate)
         }
     }
 
-    private fun updateDB(harvested: Model, sourceId: String, sourceURL: String, harvestDate: Calendar, forceUpdate: Boolean): HarvestReport {
+    private fun updateDB(harvested: Model, sourceId: String, sourceURL: String, harvestDate: Calendar,
+                         publisherId: String?, forceUpdate: Boolean): HarvestReport {
         val allServices = splitServicesFromRDF(harvested, sourceURL)
         return if (allServices.isEmpty()) {
             LOGGER.warn("No services found in data harvested from $sourceURL")
@@ -126,7 +130,11 @@ class PublicServicesHarvester(
         } else {
             val updatedServices = updateServices(allServices, harvestDate, forceUpdate)
 
-            val catalogs = splitCatalogsFromRDF(harvested, allServices, sourceURL)
+            val organization = if (publisherId != null && allServices.containsFreeServices()) {
+                orgAdapter.getOrganization(publisherId)
+            } else null
+
+            val catalogs = splitCatalogsFromRDF(harvested, allServices, sourceURL, organization)
             val updatedCatalogs = updateCatalogs(catalogs, harvestDate, forceUpdate)
 
             return HarvestReport(
@@ -204,6 +212,7 @@ class PublicServicesHarvester(
         return PublicServiceMeta(
             uri = resourceURI,
             fdkId = fdkId,
+            isPartOf = dbMeta?.isPartOf,
             issued = issued.timeInMillis,
             modified = harvestDate.timeInMillis
         )
@@ -211,7 +220,7 @@ class PublicServicesHarvester(
 
     private fun addIsPartOfToService(serviceURI: String, catalogURI: String) =
         serviceMetaRepository.findByIdOrNull(serviceURI)
-            ?.run { serviceMetaRepository.save(copy(isPartOf = catalogURI)) }
+            ?.run { if (isPartOf != catalogURI) serviceMetaRepository.save(copy(isPartOf = catalogURI)) }
 
     private fun PublicServiceRDFModel.hasChanges(fdkId: String?): Boolean =
         if (fdkId == null) true
