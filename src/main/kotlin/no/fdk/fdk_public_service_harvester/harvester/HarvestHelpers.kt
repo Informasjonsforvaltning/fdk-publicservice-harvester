@@ -7,6 +7,7 @@ import org.apache.jena.query.QueryExecutionFactory
 import org.apache.jena.query.QueryFactory
 import org.apache.jena.rdf.model.*
 import org.apache.jena.riot.Lang
+import org.apache.jena.util.ResourceUtils
 import org.apache.jena.vocabulary.*
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -37,6 +38,7 @@ fun splitCatalogsFromRDF(harvested: Model, allServices: List<PublicServiceRDFMod
                 .toSet()
 
             val catalogModelWithoutServices = resource.extractCatalogModel()
+                .recursiveBlankNodeSkolem(resource.uri)
 
             var catalogModel = catalogModelWithoutServices
             allServices.filter { catalogServices.contains(it.resourceURI) }
@@ -84,7 +86,7 @@ fun Resource.extractService(): PublicServiceRDFModel {
 
     return PublicServiceRDFModel(
         resourceURI = uri,
-        harvested = serviceModel,
+        harvested = serviceModel.recursiveBlankNodeSkolem(uri),
         isMemberOfAnyCatalog = isMemberOfAnyCatalog()
     )
 }
@@ -240,8 +242,38 @@ fun calendarFromTimestamp(timestamp: Long): Calendar {
     return calendar
 }
 
-fun createIdFromUri(uri: String): String =
-    UUID.nameUUIDFromBytes(uri.toByteArray())
+private fun Model.recursiveBlankNodeSkolem(baseURI: String): Model {
+    val anonSubjects = listSubjects().toList().filter { it.isAnon }
+    return if (anonSubjects.isEmpty()) this
+    else {
+        anonSubjects
+            .filter { it.doesNotContainAnon() }
+            .forEach {
+                ResourceUtils.renameResource(it, "$baseURI/.well-known/skolem/${it.createSkolemID()}")
+            }
+        this.recursiveBlankNodeSkolem(baseURI)
+    }
+}
+
+private fun Resource.doesNotContainAnon(): Boolean =
+    listProperties().toList()
+        .filter { it.isResourceProperty() }
+        .map { it.resource }
+        .filter { it.listProperties().toList().size > 0 }
+        .none { it.isAnon }
+
+private fun Resource.createSkolemID(): String =
+    createIdFromString(
+        listProperties().toModel()
+            .createRDFResponse(Lang.N3)
+            .replace("\\s".toRegex(), "")
+            .toCharArray()
+            .sorted()
+            .toString()
+    )
+
+fun createIdFromString(idBase: String): String =
+    UUID.nameUUIDFromBytes(idBase.toByteArray())
         .toString()
 
 data class PublicServiceRDFModel (

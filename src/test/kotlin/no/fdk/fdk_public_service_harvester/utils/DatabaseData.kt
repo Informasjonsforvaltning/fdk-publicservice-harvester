@@ -176,7 +176,7 @@ val CATALOG_1 = FDKPublicServiceTurtle(
 
 val CATALOG_1_NO_META = FDKPublicServiceTurtle(
     id = CATALOG_ID_1,
-    turtle = gzip(responseReader.readFile("harvest_response_1.ttl"))
+    turtle = gzip(responseReader.readFile("no_meta_catalog_1.ttl"))
 )
 
 fun serviceTurtleDBPopulation(): List<Document> =
