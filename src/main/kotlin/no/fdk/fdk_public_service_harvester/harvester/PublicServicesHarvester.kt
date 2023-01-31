@@ -9,12 +9,7 @@ import no.fdk.fdk_public_service_harvester.rdf.*
 import no.fdk.fdk_public_service_harvester.repository.CatalogRepository
 import no.fdk.fdk_public_service_harvester.service.TurtleService
 import org.apache.jena.rdf.model.Model
-import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.riot.Lang
-import org.apache.jena.sparql.vocabulary.FOAF
-import org.apache.jena.vocabulary.DCAT
-import org.apache.jena.vocabulary.DCTerms
-import org.apache.jena.vocabulary.RDF
 import org.slf4j.LoggerFactory
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -174,7 +169,7 @@ class PublicServicesHarvester(
         dbMeta: CatalogMeta?
     ): CatalogMeta {
         val catalogURI = resourceURI
-        val fdkId = dbMeta?.fdkId ?: createIdFromUri(catalogURI)
+        val fdkId = dbMeta?.fdkId ?: createIdFromString(catalogURI)
         val issued = dbMeta?.issued
             ?.let { timestamp -> calendarFromTimestamp(timestamp) }
             ?: harvestDate
@@ -204,7 +199,7 @@ class PublicServicesHarvester(
         harvestDate: Calendar,
         dbMeta: PublicServiceMeta?
     ): PublicServiceMeta {
-        val fdkId = dbMeta?.fdkId ?: createIdFromUri(resourceURI)
+        val fdkId = dbMeta?.fdkId ?: createIdFromString(resourceURI)
         val issued = dbMeta?.issued
             ?.let { timestamp -> calendarFromTimestamp(timestamp) }
             ?: harvestDate

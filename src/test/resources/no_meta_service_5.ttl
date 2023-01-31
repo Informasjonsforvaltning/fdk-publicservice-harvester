@@ -1,6 +1,13 @@
 @prefix cpsvno: <https://data.norge.no/vocabulary/cpsvno#> .
 @prefix dct: <http://purl.org/dc/terms/> .
+@prefix cv: <http://data.europa.eu/m8g/> .
+
+<http://test.no/services/1/.well-known/skolem/37ab3545-d4b2-3fed-b923-e5a3a4b4c91b>
+  a               cv:Participation ;
+  cv:role         <https://data.norge.no/concepts/101> ;
+  dct:identifier  "1" .
 
 <http://test.no/services/1> a cpsvno:Service ;
   dct:identifier "1" ;
+  cv:hasParticipation  <http://test.no/services/1/.well-known/skolem/37ab3545-d4b2-3fed-b923-e5a3a4b4c91b> ;
   dct:title "Test service 1"@en .

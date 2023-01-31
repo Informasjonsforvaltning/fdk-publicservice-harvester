@@ -256,8 +256,14 @@ class HarvesterTest {
             Assertions.assertEquals(TEST_HARVEST_SOURCE.url, second.firstValue)
         }
 
+        argumentCaptor<Model, String, Boolean>().apply {
+            verify(turtleService, times(2)).saveAsCatalog(first.capture(), second.capture(), third.capture())
+            assertTrue(checkIfIsomorphicAndPrintDiff(first.firstValue, responseReader.parseFile("no_meta_catalog_1.ttl", "TURTLE"), "harvestDataSourceWithCatalog"))
+            assertEquals(CATALOG_ID_1, second.firstValue)
+            Assertions.assertEquals(listOf(false, false), third.allValues)
+        }
+
         verify(turtleService, times(2)).saveAsPublicService(any(), any(), any())
-        verify(turtleService, times(2)).saveAsCatalog(any(), any(), any())
         verify(metaRepository, times(2)).save(any())
         verify(catalogMetaRepository, times(2)).save(any())
 
