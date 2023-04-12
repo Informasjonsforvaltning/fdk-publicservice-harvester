@@ -1,5 +1,6 @@
 package no.fdk.fdk_public_service_harvester.controller
 
+import jakarta.servlet.http.HttpServletRequest
 import no.fdk.fdk_public_service_harvester.rdf.jenaTypeFromAcceptHeader
 import no.fdk.fdk_public_service_harvester.service.PublicServicesService
 import org.apache.jena.riot.Lang
@@ -10,7 +11,6 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
-import javax.servlet.http.HttpServletRequest
 
 @Controller
 @RequestMapping(
