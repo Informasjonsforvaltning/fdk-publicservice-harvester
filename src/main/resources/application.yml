@@ -23,15 +23,10 @@ application:
 management:
   endpoints:
     web:
+      path-mapping:
+        info: ping
       exposure:
-        include: health, info
-  metrics:
-    export:
-      statsd:
-        enabled: true
-        flavor: telegraf
-        host: fdk-monitoring-services-telegraf
-        port: 8125
+        include: health, info, prometheus
     tags:
       application: fdk-public-service-harvester
 ---
