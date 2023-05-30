@@ -16,11 +16,11 @@ private val LOGGER = LoggerFactory.getLogger(Application::class.java)
 
 fun CatalogRDFModel.harvestDiff(dbTurtle: String?): Boolean =
     if (dbTurtle == null) true
-    else !harvested.isIsomorphicWith(parseRDFResponse(dbTurtle, Lang.TURTLE, null))
+    else !harvested.isIsomorphicWith(parseRDFResponse(dbTurtle, Lang.TURTLE))
 
 fun PublicServiceRDFModel.harvestDiff(dbTurtle: String?): Boolean =
     if (dbTurtle == null) true
-    else !harvested.isIsomorphicWith(parseRDFResponse(dbTurtle, Lang.TURTLE, null))
+    else !harvested.isIsomorphicWith(parseRDFResponse(dbTurtle, Lang.TURTLE))
 
 fun splitCatalogsFromRDF(harvested: Model, allServices: List<PublicServiceRDFModel>,
                          sourceURL: String, organization: Organization?): List<CatalogRDFModel> {

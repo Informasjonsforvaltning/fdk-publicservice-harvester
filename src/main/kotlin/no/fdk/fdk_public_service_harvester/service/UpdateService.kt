@@ -36,11 +36,11 @@ class UpdateService (
         serviceMetaRepository.findAll()
             .forEach {
                 turtleService.getPublicService(it.fdkId, withRecords = true)
-                    ?.let { dboTurtle -> parseRDFResponse(dboTurtle, Lang.TURTLE, null) }
+                    ?.let { dboTurtle -> parseRDFResponse(dboTurtle, Lang.TURTLE) }
                     ?.run { serviceUnion = serviceUnion.union(this) }
 
                 turtleService.getPublicService(it.fdkId, withRecords = false)
-                    ?.let { dboTurtle -> parseRDFResponse(dboTurtle, Lang.TURTLE, null) }
+                    ?.let { dboTurtle -> parseRDFResponse(dboTurtle, Lang.TURTLE) }
                     ?.run { serviceUnionNoRecords = serviceUnionNoRecords.union(this) }
             }
 
@@ -54,11 +54,11 @@ class UpdateService (
             .filter { it.services.isNotEmpty() }
             .forEach {
                 turtleService.getCatalog(it.fdkId, withRecords = true)
-                    ?.let { turtle -> parseRDFResponse(turtle, Lang.TURTLE, null) }
+                    ?.let { turtle -> parseRDFResponse(turtle, Lang.TURTLE) }
                     ?.run { catalogUnion = catalogUnion.union(this) }
 
                 turtleService.getCatalog(it.fdkId, withRecords = false)
-                    ?.let { turtle -> parseRDFResponse(turtle, Lang.TURTLE, null) }
+                    ?.let { turtle -> parseRDFResponse(turtle, Lang.TURTLE) }
                     ?.run { catalogUnionNoRecords = catalogUnionNoRecords.union(this) }
             }
 
@@ -72,7 +72,7 @@ class UpdateService (
                 val serviceMeta = service.createMetaModel()
 
                 turtleService.getPublicService(service.fdkId, withRecords = false)
-                    ?.let { serviceNoRecords -> parseRDFResponse(serviceNoRecords, Lang.TURTLE, null) }
+                    ?.let { serviceNoRecords -> parseRDFResponse(serviceNoRecords, Lang.TURTLE) }
                     ?.let { serviceModelNoRecords -> serviceMeta.union(serviceModelNoRecords) }
                     ?.run { turtleService.saveAsPublicService(this, fdkId = service.fdkId, withRecords = true) }
             }
@@ -80,7 +80,7 @@ class UpdateService (
         catalogMetaRepository.findAll()
             .forEach { catalog ->
                 val catalogNoRecords = turtleService.getCatalog(catalog.fdkId, withRecords = false)
-                    ?.let { parseRDFResponse(it, Lang.TURTLE, null) }
+                    ?.let { parseRDFResponse(it, Lang.TURTLE) }
 
                 if (catalogNoRecords != null) {
                     val fdkCatalogURI = "${applicationProperties.publicServiceHarvesterUri}/catalogs/${catalog.fdkId}"
