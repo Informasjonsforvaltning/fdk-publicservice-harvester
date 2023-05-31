@@ -5,7 +5,7 @@ import no.fdk.fdk_public_service_harvester.harvester.calendarFromTimestamp
 import no.fdk.fdk_public_service_harvester.model.*
 import no.fdk.fdk_public_service_harvester.rdf.DCATNO
 import no.fdk.fdk_public_service_harvester.rdf.containsTriple
-import no.fdk.fdk_public_service_harvester.rdf.parseRDFResponse
+import no.fdk.fdk_public_service_harvester.rdf.safeParseRDF
 import no.fdk.fdk_public_service_harvester.rdf.safeAddProperty
 import no.fdk.fdk_public_service_harvester.repository.CatalogRepository
 import no.fdk.fdk_public_service_harvester.repository.PublicServicesRepository
@@ -36,11 +36,11 @@ class UpdateService (
         serviceMetaRepository.findAll()
             .forEach {
                 turtleService.getPublicService(it.fdkId, withRecords = true)
-                    ?.let { dboTurtle -> parseRDFResponse(dboTurtle, Lang.TURTLE) }
+                    ?.let { dboTurtle -> safeParseRDF(dboTurtle, Lang.TURTLE) }
                     ?.run { serviceUnion = serviceUnion.union(this) }
 
                 turtleService.getPublicService(it.fdkId, withRecords = false)
-                    ?.let { dboTurtle -> parseRDFResponse(dboTurtle, Lang.TURTLE) }
+                    ?.let { dboTurtle -> safeParseRDF(dboTurtle, Lang.TURTLE) }
                     ?.run { serviceUnionNoRecords = serviceUnionNoRecords.union(this) }
             }
 
@@ -54,11 +54,11 @@ class UpdateService (
             .filter { it.services.isNotEmpty() }
             .forEach {
                 turtleService.getCatalog(it.fdkId, withRecords = true)
-                    ?.let { turtle -> parseRDFResponse(turtle, Lang.TURTLE) }
+                    ?.let { turtle -> safeParseRDF(turtle, Lang.TURTLE) }
                     ?.run { catalogUnion = catalogUnion.union(this) }
 
                 turtleService.getCatalog(it.fdkId, withRecords = false)
-                    ?.let { turtle -> parseRDFResponse(turtle, Lang.TURTLE) }
+                    ?.let { turtle -> safeParseRDF(turtle, Lang.TURTLE) }
                     ?.run { catalogUnionNoRecords = catalogUnionNoRecords.union(this) }
             }
 
@@ -72,7 +72,7 @@ class UpdateService (
                 val serviceMeta = service.createMetaModel()
 
                 turtleService.getPublicService(service.fdkId, withRecords = false)
-                    ?.let { serviceNoRecords -> parseRDFResponse(serviceNoRecords, Lang.TURTLE) }
+                    ?.let { serviceNoRecords -> safeParseRDF(serviceNoRecords, Lang.TURTLE) }
                     ?.let { serviceModelNoRecords -> serviceMeta.union(serviceModelNoRecords) }
                     ?.run { turtleService.saveAsPublicService(this, fdkId = service.fdkId, withRecords = true) }
             }
@@ -80,7 +80,7 @@ class UpdateService (
         catalogMetaRepository.findAll()
             .forEach { catalog ->
                 val catalogNoRecords = turtleService.getCatalog(catalog.fdkId, withRecords = false)
-                    ?.let { parseRDFResponse(it, Lang.TURTLE) }
+                    ?.let { safeParseRDF(it, Lang.TURTLE) }
 
                 if (catalogNoRecords != null) {
                     val fdkCatalogURI = "${applicationProperties.publicServiceHarvesterUri}/catalogs/${catalog.fdkId}"

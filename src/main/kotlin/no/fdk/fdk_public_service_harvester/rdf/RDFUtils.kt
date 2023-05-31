@@ -41,6 +41,14 @@ fun parseRDFResponse(responseBody: String, rdfLanguage: Lang): Model {
     return responseModel
 }
 
+fun safeParseRDF(rdf: String, lang: Lang): Model =
+    try {
+        parseRDFResponse(rdf, lang)
+    } catch (ex: Exception) {
+        logger.warn("parse failure", ex)
+        ModelFactory.createDefaultModel()
+    }
+
 fun Model.createRDFResponse(responseType: Lang): String =
     ByteArrayOutputStream().use{ out ->
         write(out, responseType.name)
