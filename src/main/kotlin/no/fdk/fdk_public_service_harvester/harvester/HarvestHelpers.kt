@@ -82,7 +82,7 @@ fun Resource.extractService(): PublicServiceRDFModel {
 
     listProperties().toList()
         .filter { it.isResourceProperty() }
-        .forEach { serviceModel.recursiveAddNonPublicServiceResources(it.resource, 10) }
+        .forEach { serviceModel.recursiveAddNonPublicServiceResources(it.resource) }
 
     return PublicServiceRDFModel(
         resourceURI = uri,
@@ -94,7 +94,7 @@ fun Resource.extractService(): PublicServiceRDFModel {
 private fun Model.addCatalogProperties(property: Statement): Model =
     when {
         property.predicate != DCATNO.containsService && property.isResourceProperty() ->
-            add(property).recursiveAddNonPublicServiceResources(property.resource, 5)
+            add(property).recursiveAddNonPublicServiceResources(property.resource)
         property.predicate != DCATNO.containsService -> add(property)
         property.isResourceProperty() && property.resource.isURIResource -> add(property)
         else -> this
@@ -215,8 +215,7 @@ private fun Resource.addServicesForGeneratedCatalog(services: Set<String>): Reso
     return this
 }
 
-private fun Model.recursiveAddNonPublicServiceResources(resource: Resource, recursiveCount: Int): Model {
-    val newCount = recursiveCount - 1
+private fun Model.recursiveAddNonPublicServiceResources(resource: Resource): Model {
     val types = resource.listProperties(RDF.type)
         .toList()
         .map { it.`object` }
@@ -224,11 +223,9 @@ private fun Model.recursiveAddNonPublicServiceResources(resource: Resource, recu
     if (resourceShouldBeAdded(resource, types)) {
         add(resource.listProperties())
 
-        if (newCount > 0) {
-            resource.listProperties().toList()
-                .filter { it.isResourceProperty() }
-                .forEach { recursiveAddNonPublicServiceResources(it.resource, newCount) }
-        }
+        resource.listProperties().toList()
+            .filter { it.isResourceProperty() }
+            .forEach { recursiveAddNonPublicServiceResources(it.resource) }
     }
 
     if (types.contains(CV.Participation)) addAgentsAssociatedWithParticipation(resource)
