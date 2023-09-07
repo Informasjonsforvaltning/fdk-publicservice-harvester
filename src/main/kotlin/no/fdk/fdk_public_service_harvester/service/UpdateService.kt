@@ -30,36 +30,36 @@ class UpdateService (
 ) {
 
     fun updateUnionModels() {
-        var serviceUnion = ModelFactory.createDefaultModel()
-        var serviceUnionNoRecords = ModelFactory.createDefaultModel()
+        val serviceUnion = ModelFactory.createDefaultModel()
+        val serviceUnionNoRecords = ModelFactory.createDefaultModel()
 
         serviceMetaRepository.findAll()
             .forEach {
                 turtleService.getPublicService(it.fdkId, withRecords = true)
                     ?.let { dboTurtle -> safeParseRDF(dboTurtle, Lang.TURTLE) }
-                    ?.run { serviceUnion = serviceUnion.union(this) }
+                    ?.run { serviceUnion.add(this) }
 
                 turtleService.getPublicService(it.fdkId, withRecords = false)
                     ?.let { dboTurtle -> safeParseRDF(dboTurtle, Lang.TURTLE) }
-                    ?.run { serviceUnionNoRecords = serviceUnionNoRecords.union(this) }
+                    ?.run { serviceUnionNoRecords.add(this) }
             }
 
         turtleService.saveAsServiceUnion(serviceUnion, true)
         turtleService.saveAsServiceUnion(serviceUnionNoRecords, false)
 
-        var catalogUnion = ModelFactory.createDefaultModel()
-        var catalogUnionNoRecords = ModelFactory.createDefaultModel()
+        val catalogUnion = ModelFactory.createDefaultModel()
+        val catalogUnionNoRecords = ModelFactory.createDefaultModel()
 
         catalogMetaRepository.findAll()
             .filter { it.services.isNotEmpty() }
             .forEach {
                 turtleService.getCatalog(it.fdkId, withRecords = true)
                     ?.let { turtle -> safeParseRDF(turtle, Lang.TURTLE) }
-                    ?.run { catalogUnion = catalogUnion.union(this) }
+                    ?.run { catalogUnion.add(this) }
 
                 turtleService.getCatalog(it.fdkId, withRecords = false)
                     ?.let { turtle -> safeParseRDF(turtle, Lang.TURTLE) }
-                    ?.run { catalogUnionNoRecords = catalogUnionNoRecords.union(this) }
+                    ?.run { catalogUnionNoRecords.add(this) }
             }
 
         turtleService.saveAsCatalogUnion(catalogUnion, true)
@@ -84,14 +84,11 @@ class UpdateService (
 
                 if (catalogNoRecords != null) {
                     val fdkCatalogURI = "${applicationProperties.publicServiceHarvesterUri}/catalogs/${catalog.fdkId}"
-                    var catalogMeta = catalog.createMetaModel()
+                    val catalogMeta = catalog.createMetaModel()
 
                     serviceMetaRepository.findAllByIsPartOf(fdkCatalogURI)
                         .filter { it.catalogContainsService(catalog.uri, catalogNoRecords) }
-                        .forEach { service ->
-                            val serviceMeta = service.createMetaModel()
-                            catalogMeta = catalogMeta.union(serviceMeta)
-                        }
+                        .forEach { service -> catalogMeta.add(service.createMetaModel()) }
 
                     turtleService.saveAsCatalog(
                         catalogMeta.union(catalogNoRecords),

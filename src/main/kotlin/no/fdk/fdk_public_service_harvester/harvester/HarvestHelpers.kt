@@ -40,14 +40,14 @@ fun splitCatalogsFromRDF(harvested: Model, allServices: List<PublicServiceRDFMod
             val catalogModelWithoutServices = resource.extractCatalogModel()
                 .recursiveBlankNodeSkolem(resource.uri)
 
-            var catalogModel = catalogModelWithoutServices
+            val catalogModel = ModelFactory.createDefaultModel()
             allServices.filter { catalogServices.contains(it.resourceURI) }
-                .forEach { catalogModel = catalogModel.union(it.harvested) }
+                .forEach { catalogModel.add(it.harvested) }
 
             CatalogRDFModel(
                 resourceURI = resource.uri,
                 harvestedWithoutServices = catalogModelWithoutServices,
-                harvested = catalogModel,
+                harvested = catalogModel.union(catalogModelWithoutServices),
                 services = catalogServices
             )
         }
@@ -77,12 +77,12 @@ fun Resource.extractCatalogModel(): Model {
 }
 
 fun Resource.extractService(): PublicServiceRDFModel {
-    var serviceModel = listProperties().toModel()
-    serviceModel = serviceModel.setNsPrefixes(model.nsPrefixMap)
+    val serviceModel = listProperties().toModel()
+    serviceModel.setNsPrefixes(model.nsPrefixMap)
 
     listProperties().toList()
         .filter { it.isResourceProperty() }
-        .forEach { serviceModel = serviceModel.recursiveAddNonPublicServiceResources(it.resource, 10) }
+        .forEach { serviceModel.recursiveAddNonPublicServiceResources(it.resource, 10) }
 
     return PublicServiceRDFModel(
         resourceURI = uri,
@@ -151,13 +151,13 @@ private fun generatedCatalog(
     val generatedCatalogURI = "$sourceURL#GeneratedCatalog"
     val catalogModelWithoutServices = createModelForHarvestSourceCatalog(generatedCatalogURI, serviceURIs, organization)
 
-    var catalogModel = catalogModelWithoutServices
-    services.forEach { catalogModel = catalogModel.union(it.harvested) }
+    val catalogModel = ModelFactory.createDefaultModel()
+    services.forEach { catalogModel.add(it.harvested) }
 
     return CatalogRDFModel(
         resourceURI = generatedCatalogURI,
         harvestedWithoutServices = catalogModelWithoutServices,
-        harvested = catalogModel,
+        harvested = catalogModel.union(catalogModelWithoutServices),
         services = serviceURIs
     )
 }
