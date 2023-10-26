@@ -16,6 +16,8 @@ data class PublicServiceMeta (
     val fdkId: String,
 
     val isPartOf: String? = null,
+    val removed: Boolean = false,
+
     val issued: Long,
     val modified: Long
 )
