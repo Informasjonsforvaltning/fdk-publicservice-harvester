@@ -112,36 +112,32 @@ class PublicServicesHarvester(
     private fun updateDB(harvested: Model, sourceId: String, sourceURL: String, harvestDate: Calendar,
                          publisherId: String?, forceUpdate: Boolean): HarvestReport {
         val allServices = splitServicesFromRDF(harvested, sourceURL)
-        return if (allServices.isEmpty()) {
-            LOGGER.warn("No services found in data harvested from $sourceURL")
-            HarvestReport(
-                id = sourceId,
-                url = sourceURL,
-                harvestError = true,
-                errorMessage = "No services found in data harvested from $sourceURL",
-                startTime = harvestDate.formatWithOsloTimeZone(),
-                endTime = formatNowWithOsloTimeZone()
-            )
-        } else {
-            val updatedServices = updateServices(allServices, harvestDate, forceUpdate)
+        val updatedServices = updateServices(allServices, harvestDate, forceUpdate)
 
-            val organization = if (publisherId != null && allServices.containsFreeServices()) {
-                orgAdapter.getOrganization(publisherId)
-            } else null
+        val organization = if (publisherId != null && allServices.containsFreeServices()) {
+            orgAdapter.getOrganization(publisherId)
+        } else null
 
-            val catalogs = splitCatalogsFromRDF(harvested, allServices, sourceURL, organization)
-            val updatedCatalogs = updateCatalogs(catalogs, harvestDate, forceUpdate)
+        val catalogs = splitCatalogsFromRDF(harvested, allServices, sourceURL, organization)
+        val updatedCatalogs = updateCatalogs(catalogs, harvestDate, forceUpdate)
 
-            return HarvestReport(
-                id = sourceId,
-                url = sourceURL,
-                harvestError = false,
-                startTime = harvestDate.formatWithOsloTimeZone(),
-                endTime = formatNowWithOsloTimeZone(),
-                changedCatalogs = updatedCatalogs,
-                changedResources = updatedServices
-            )
-        }
+        val removedServices = getServicesRemovedThisHarvest(
+            updatedCatalogs.map { catalogFdkUri(it.fdkId) },
+            allServices.map { it.resourceURI }
+        )
+        removedServices.map { it.copy(removed = true) }
+            .run { serviceMetaRepository.saveAll(this) }
+
+        return HarvestReport(
+            id = sourceId,
+            url = sourceURL,
+            harvestError = false,
+            startTime = harvestDate.formatWithOsloTimeZone(),
+            endTime = formatNowWithOsloTimeZone(),
+            changedCatalogs = updatedCatalogs,
+            changedResources = updatedServices,
+            removedResources = removedServices.map { FdkIdAndUri(fdkId = it.fdkId, uri = it.uri) }
+        )
     }
 
     private fun updateCatalogs(catalogs: List<CatalogRDFModel>, harvestDate: Calendar, forceUpdate: Boolean): List<FdkIdAndUri> =
@@ -158,8 +154,7 @@ class PublicServicesHarvester(
                     withRecords = false
                 )
 
-                val fdkUri = "${applicationProperties.publicServiceHarvesterUri}/catalogs/${updatedMeta.fdkId}"
-                it.first.services.forEach { serviceURI -> addIsPartOfToService(serviceURI, fdkUri) }
+                it.first.services.forEach { serviceURI -> addIsPartOfToService(serviceURI, catalogFdkUri(updatedMeta.fdkId)) }
 
                 FdkIdAndUri(fdkId = updatedMeta.fdkId, uri = updatedMeta.uri)
             }
@@ -212,6 +207,13 @@ class PublicServicesHarvester(
             modified = harvestDate.timeInMillis
         )
     }
+
+    private fun catalogFdkUri(fdkId: String): String =
+        "${applicationProperties.publicServiceHarvesterUri}/catalogs/$fdkId"
+
+    private fun getServicesRemovedThisHarvest(catalogs: List<String>, services: List<String>): List<PublicServiceMeta> =
+        catalogs.flatMap { serviceMetaRepository.findAllByIsPartOf(it) }
+            .filter { !it.removed && !services.contains(it.uri) }
 
     private fun addIsPartOfToService(serviceURI: String, catalogURI: String) =
         serviceMetaRepository.findByIdOrNull(serviceURI)
