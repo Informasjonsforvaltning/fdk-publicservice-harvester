@@ -23,8 +23,10 @@ application:
 management:
   endpoints:
     web:
+      base-path: /
       path-mapping:
         info: ping
+        health: ready
       exposure:
         include: health, info, prometheus
     tags:
