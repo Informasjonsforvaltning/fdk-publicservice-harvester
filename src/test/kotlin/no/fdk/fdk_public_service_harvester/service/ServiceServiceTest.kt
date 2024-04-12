@@ -37,11 +37,11 @@ class PublicServicesServiceTest {
         @Test
         fun getAllHandlesTurtleAndOtherRDF() {
             whenever(turtleService.getServiceUnion(true))
-                .thenReturn(javaClass.classLoader.getResource("all_services.ttl")!!.readText())
+                .thenReturn(javaClass.classLoader.getResource("all_catalogs.ttl")!!.readText())
             whenever(turtleService.getServiceUnion(false))
                 .thenReturn(javaClass.classLoader.getResource("no_meta_all_services.ttl")!!.readText())
 
-            val expected = responseReader.parseFile("all_services.ttl", "TURTLE")
+            val expected = responseReader.parseFile("all_catalogs.ttl", "TURTLE")
             val expectedNoRecords = responseReader.parseFile("no_meta_all_services.ttl", "TURTLE")
 
             val responseTurtle = service.getAllServices(Lang.TURTLE, false)

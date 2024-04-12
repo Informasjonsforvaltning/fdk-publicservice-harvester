@@ -141,7 +141,7 @@ val HARVESTED_DBO = HarvestSourceTurtle(
 
 val UNION_DATA = FDKPublicServiceTurtle(
     id = UNION_ID,
-    turtle = gzip(responseReader.readFile("all_services.ttl"))
+    turtle = gzip(responseReader.readFile("all_catalogs.ttl"))
 )
 
 val UNION_DATA_NO_META = PublicServiceTurtle(

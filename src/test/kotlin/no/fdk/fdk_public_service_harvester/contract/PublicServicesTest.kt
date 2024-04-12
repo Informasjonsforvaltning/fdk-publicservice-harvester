@@ -27,7 +27,7 @@ class PublicServicesTest: ApiTestContext() {
         val response = apiGet("/public-services?catalogrecords=true", "text/turtle", port)
         Assumptions.assumeTrue(HttpStatus.OK.value() == response["status"])
 
-        val expected = responseReader.parseFile("all_services.ttl", "TURTLE")
+        val expected = responseReader.parseFile("all_catalogs.ttl", "TURTLE")
         val responseModel = responseReader.parseResponse(response["body"] as String, "TURTLE")
 
         assertTrue(checkIfIsomorphicAndPrintDiff(actual = responseModel, expected = expected, name = "ServicesTest.findAll"))
