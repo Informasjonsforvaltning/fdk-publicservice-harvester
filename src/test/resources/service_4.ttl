@@ -7,10 +7,10 @@
   dct:identifier "0" ;
   dct:title "Test service 0"@en .
 
-<http://localhost:5000/public-services/ef4ca382-ee65-3a92-be9e-40fd93da53bc>
+<http://localhost:5050/public-services/ef4ca382-ee65-3a92-be9e-40fd93da53bc>
         a               dcat:CatalogRecord ;
         dct:identifier  "ef4ca382-ee65-3a92-be9e-40fd93da53bc" ;
-        dct:isPartOf    <http://localhost:5000/public-services/catalogs/b7c6d34c-624d-3c72-9e30-2b608e433ad7> ;
+        dct:isPartOf    <http://localhost:5050/public-services/catalogs/b7c6d34c-624d-3c72-9e30-2b608e433ad7> ;
         dct:issued      "2020-10-05T13:15:39.831Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> ;
         dct:modified    "2020-10-05T13:15:39.831Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> ;
         foaf:primaryTopic <http://test.no/services/0> .

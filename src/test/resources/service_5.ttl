@@ -14,10 +14,10 @@
   cv:hasParticipation  <http://test.no/services/1/.well-known/skolem/37ab3545-d4b2-3fed-b923-e5a3a4b4c91b> ;
   dct:title "Test service 1"@en .
 
-<http://localhost:5000/public-services/7baa248b-1a27-3c46-80cf-889882d6b894>
+<http://localhost:5050/public-services/7baa248b-1a27-3c46-80cf-889882d6b894>
         a               dcat:CatalogRecord ;
         dct:identifier  "7baa248b-1a27-3c46-80cf-889882d6b894" ;
-        dct:isPartOf    <http://localhost:5000/public-services/catalogs/b7c6d34c-624d-3c72-9e30-2b608e433ad7> ;
+        dct:isPartOf    <http://localhost:5050/public-services/catalogs/b7c6d34c-624d-3c72-9e30-2b608e433ad7> ;
         dct:issued      "2020-10-05T13:15:39.831Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> ;
         dct:modified    "2020-10-05T13:15:39.831Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> ;
         foaf:primaryTopic   <http://test.no/services/1> .

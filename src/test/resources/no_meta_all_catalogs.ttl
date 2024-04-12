@@ -58,7 +58,7 @@
        <http://publications.europa.eu/resource/authority/language/NOB>;
    .
 
-<http://localhost:5000/fdk-public-service-publisher.ttl#GeneratedCatalog>
+<http://localhost:5050/fdk-public-service-publisher.ttl#GeneratedCatalog>
     a       dcat:Catalog ;
     dcatno:containsService <https://raw.githubusercontent.com/Informasjonsforvaltning/cpsv-ap-no/develop/examples/exTjenesteDummy.ttl> ,
         <http://public-service-publisher.fellesdatakatalog.digdir.no/services/3> ,

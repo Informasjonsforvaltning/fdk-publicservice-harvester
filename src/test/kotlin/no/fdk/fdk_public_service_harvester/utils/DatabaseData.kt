@@ -11,7 +11,7 @@ private val responseReader = TestResponseReader()
 val SERVICE_META_0 = PublicServiceMeta(
     uri = "http://public-service-publisher.fellesdatakatalog.digdir.no/services/1",
     fdkId = SERVICE_ID_0,
-    isPartOf ="http://localhost:5000/public-services/catalogs/4d2c9e29-2f9a-304f-9e48-34e30a36d068",
+    isPartOf ="http://localhost:5050/public-services/catalogs/e09277f3-1eec-3ab9-a979-79259736d768",
     issued = TEST_HARVEST_DATE.timeInMillis,
     modified = TEST_HARVEST_DATE.timeInMillis
 )
@@ -29,7 +29,7 @@ val SERVICE_TURTLE_0_NO_META = PublicServiceTurtle(
 val SERVICE_META_1 = PublicServiceMeta(
     uri = "http://public-service-publisher.fellesdatakatalog.digdir.no/services/2",
     fdkId = SERVICE_ID_1,
-    isPartOf ="http://localhost:5000/public-services/catalogs/4d2c9e29-2f9a-304f-9e48-34e30a36d068",
+    isPartOf ="http://localhost:5050/public-services/catalogs/e09277f3-1eec-3ab9-a979-79259736d768",
     issued = TEST_HARVEST_DATE.timeInMillis,
     modified = TEST_HARVEST_DATE.timeInMillis
 )
@@ -47,7 +47,7 @@ val SERVICE_TURTLE_1_NO_META = PublicServiceTurtle(
 val SERVICE_META_2 = PublicServiceMeta(
     uri = "http://public-service-publisher.fellesdatakatalog.digdir.no/services/3",
     fdkId = SERVICE_ID_2,
-    isPartOf ="http://localhost:5000/public-services/catalogs/4d2c9e29-2f9a-304f-9e48-34e30a36d068",
+    isPartOf ="http://localhost:5050/public-services/catalogs/e09277f3-1eec-3ab9-a979-79259736d768",
     issued = TEST_HARVEST_DATE.timeInMillis,
     modified = TEST_HARVEST_DATE.timeInMillis
 )
@@ -65,7 +65,7 @@ val SERVICE_TURTLE_2_NO_META = PublicServiceTurtle(
 val SERVICE_META_3 = PublicServiceMeta(
     uri = "https://raw.githubusercontent.com/Informasjonsforvaltning/cpsv-ap-no/develop/examples/exTjenesteDummy.ttl",
     fdkId = SERVICE_ID_3,
-    isPartOf ="http://localhost:5000/public-services/catalogs/4d2c9e29-2f9a-304f-9e48-34e30a36d068",
+    isPartOf ="http://localhost:5050/public-services/catalogs/e09277f3-1eec-3ab9-a979-79259736d768",
     issued = TEST_HARVEST_DATE.timeInMillis,
     modified = TEST_HARVEST_DATE.timeInMillis
 )
@@ -73,7 +73,7 @@ val SERVICE_META_3 = PublicServiceMeta(
 val SERVICE_META_4 = PublicServiceMeta(
     uri = "http://test.no/services/0",
     fdkId = "ef4ca382-ee65-3a92-be9e-40fd93da53bc",
-    isPartOf = "http://localhost:5000/public-services/catalogs/$CATALOG_ID_1",
+    isPartOf = "http://localhost:5050/public-services/catalogs/$CATALOG_ID_1",
     issued = TEST_HARVEST_DATE.timeInMillis,
     modified = TEST_HARVEST_DATE.timeInMillis
 )
@@ -81,13 +81,13 @@ val SERVICE_META_4 = PublicServiceMeta(
 val SERVICE_META_5 = PublicServiceMeta(
     uri = "http://test.no/services/1",
     fdkId = "7baa248b-1a27-3c46-80cf-889882d6b894",
-    isPartOf = "http://localhost:5000/public-services/catalogs/$CATALOG_ID_1",
+    isPartOf = "http://localhost:5050/public-services/catalogs/$CATALOG_ID_1",
     issued = TEST_HARVEST_DATE.timeInMillis,
     modified = TEST_HARVEST_DATE.timeInMillis
 )
 
 val CATALOG_META_0 = CatalogMeta(
-    uri="http://localhost:5000/fdk-public-service-publisher.ttl#GeneratedCatalog",
+    uri="http://localhost:5050/fdk-public-service-publisher.ttl#GeneratedCatalog",
     fdkId= CATALOG_ID_0,
     services=setOf(
         SERVICE_META_0.uri, SERVICE_META_1.uri,
@@ -135,7 +135,7 @@ val SERVICE_TURTLE_5_NO_META = PublicServiceTurtle(
 )
 
 val HARVESTED_DBO = HarvestSourceTurtle(
-    id = "http://localhost:5000/fdk-public-service-publisher.ttl",
+    id = "http://localhost:5050/fdk-public-service-publisher.ttl",
     turtle = gzip(responseReader.readFile("harvest_response_0.ttl"))
 )
 
