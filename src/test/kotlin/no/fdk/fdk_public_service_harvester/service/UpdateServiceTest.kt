@@ -27,7 +27,11 @@ class UpdateServiceTest {
 
         @Test
         fun catalogRecordsIsRecreatedFromMetaDBO() {
-            whenever(metaRepository.findAll())
+            whenever(catalogMetaRepository.findAll())
+                .thenReturn(listOf(CATALOG_META_0))
+            whenever(turtleService.getCatalog(CATALOG_ID_0, false))
+                .thenReturn(responseReader.readFile("no_meta_catalog_0.ttl"))
+            whenever(metaRepository.findAllByIsPartOf("http://localhost:5050/public-services/catalogs/$CATALOG_ID_0"))
                 .thenReturn(listOf(SERVICE_META_0, SERVICE_META_1))
             whenever(turtleService.getPublicService(SERVICE_ID_0, false))
                 .thenReturn(responseReader.readFile("no_meta_service_0.ttl"))
@@ -88,7 +92,7 @@ class UpdateServiceTest {
 
             updateService.updateUnionModels()
 
-            val expected = responseReader.parseFile("all_services.ttl", "TURTLE")
+            val expected = responseReader.parseFile("all_catalogs.ttl", "TURTLE")
             val expectedNoRecords = responseReader.parseFile("no_meta_all_services.ttl", "TURTLE")
 
             argumentCaptor<Model, Boolean>().apply {

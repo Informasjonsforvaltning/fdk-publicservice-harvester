@@ -3,6 +3,7 @@
 @prefix cv: <http://data.europa.eu/m8g/> .
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
 @prefix dcat:  <http://www.w3.org/ns/dcat#> .
+@prefix dcatno: <https://data.norge.no/vocabulary/dcatno#> .
 @prefix foaf:  <http://xmlns.com/foaf/0.1/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
@@ -21,3 +22,17 @@
         dct:issued         "2020-10-05T13:15:39.831Z"^^xsd:dateTime ;
         dct:modified       "2020-10-15T11:52:16.122Z"^^xsd:dateTime ;
         foaf:primaryTopic  <http://public-service-publisher.fellesdatakatalog.digdir.no/services/1> .
+
+<http://localhost:5050/fdk-public-service-publisher.ttl#GeneratedCatalog>
+    a       dcat:Catalog ;
+    dcatno:containsService <https://raw.githubusercontent.com/Informasjonsforvaltning/cpsv-ap-no/develop/examples/exTjenesteDummy.ttl> ,
+        <http://public-service-publisher.fellesdatakatalog.digdir.no/services/3> ,
+        <http://public-service-publisher.fellesdatakatalog.digdir.no/services/2> ,
+        <http://public-service-publisher.fellesdatakatalog.digdir.no/services/1> .
+
+<http://localhost:5050/public-services/catalogs/e09277f3-1eec-3ab9-a979-79259736d768>
+        a                  dcat:CatalogRecord ;
+        dct:identifier     "e09277f3-1eec-3ab9-a979-79259736d768" ;
+        dct:issued         "2020-10-05T13:15:39.831Z"^^xsd:dateTime ;
+        dct:modified       "2020-10-05T13:15:39.831Z"^^xsd:dateTime ;
+        foaf:primaryTopic  <http://localhost:5050/fdk-public-service-publisher.ttl#GeneratedCatalog> .

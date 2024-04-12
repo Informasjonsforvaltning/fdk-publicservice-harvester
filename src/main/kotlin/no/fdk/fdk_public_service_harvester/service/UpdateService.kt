@@ -2,6 +2,7 @@ package no.fdk.fdk_public_service_harvester.service
 
 import no.fdk.fdk_public_service_harvester.configuration.ApplicationProperties
 import no.fdk.fdk_public_service_harvester.harvester.calendarFromTimestamp
+import no.fdk.fdk_public_service_harvester.harvester.extractCatalogModel
 import no.fdk.fdk_public_service_harvester.model.*
 import no.fdk.fdk_public_service_harvester.rdf.DCATNO
 import no.fdk.fdk_public_service_harvester.rdf.containsTriple
@@ -67,16 +68,6 @@ class UpdateService (
     }
 
     fun updateMetaData() {
-        serviceMetaRepository.findAll()
-            .forEach { service ->
-                val serviceMeta = service.createMetaModel()
-
-                turtleService.getPublicService(service.fdkId, withRecords = false)
-                    ?.let { serviceNoRecords -> safeParseRDF(serviceNoRecords, Lang.TURTLE) }
-                    ?.let { serviceModelNoRecords -> serviceMeta.union(serviceModelNoRecords) }
-                    ?.run { turtleService.saveAsPublicService(this, fdkId = service.fdkId, withRecords = true) }
-            }
-
         catalogMetaRepository.findAll()
             .forEach { catalog ->
                 val catalogNoRecords = turtleService.getCatalog(catalog.fdkId, withRecords = false)
@@ -85,13 +76,27 @@ class UpdateService (
                 if (catalogNoRecords != null) {
                     val fdkCatalogURI = "${applicationProperties.publicServiceHarvesterUri}/catalogs/${catalog.fdkId}"
                     val catalogMeta = catalog.createMetaModel()
+                    val completeMetaModel = ModelFactory.createDefaultModel()
+                    completeMetaModel.add(catalogMeta)
+
+                    val catalogTriples = catalogNoRecords.getResource(catalog.uri)
+                        .extractCatalogModel()
+                    catalogTriples.add(catalogMeta)
 
                     serviceMetaRepository.findAllByIsPartOf(fdkCatalogURI)
                         .filter { it.catalogContainsService(catalog.uri, catalogNoRecords) }
-                        .forEach { service -> catalogMeta.add(service.createMetaModel()) }
+                        .forEach { service ->
+                            val serviceMeta = service.createMetaModel()
+                            completeMetaModel.add(serviceMeta)
+                            turtleService.getPublicService(service.fdkId, withRecords = false)
+                                ?.let { serviceNoRecords -> safeParseRDF(serviceNoRecords, Lang.TURTLE) }
+                                ?.let { serviceModelNoRecords -> serviceMeta.union(serviceModelNoRecords) }
+                                ?.let { serviceModel -> catalogTriples.union(serviceModel) }
+                                ?.run { turtleService.saveAsPublicService(this, fdkId = service.fdkId, withRecords = true) }
+                        }
 
                     turtleService.saveAsCatalog(
-                        catalogMeta.union(catalogNoRecords),
+                        completeMetaModel.union(catalogNoRecords),
                         fdkId = catalog.fdkId,
                         withRecords = true
                     )
