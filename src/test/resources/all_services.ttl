@@ -31,26 +31,26 @@
   cv:isGroupedBy <http://public-service-publisher.fellesdatakatalog.digdir.no/events/1> ;
 .
 
-<http://localhost:5000/public-services/d5d0c07c-c14f-3741-9aa3-126960958cf0>
+<http://localhost:5050/public-services/d5d0c07c-c14f-3741-9aa3-126960958cf0>
         a                  dcat:CatalogRecord ;
         dct:identifier     "d5d0c07c-c14f-3741-9aa3-126960958cf0" ;
-        dct:isPartOf    <http://localhost:5000/public-services/catalogs/4d2c9e29-2f9a-304f-9e48-34e30a36d068> ;
+        dct:isPartOf    <http://localhost:5050/public-services/catalogs/e09277f3-1eec-3ab9-a979-79259736d768> ;
         dct:issued         "2020-10-05T13:15:39.831Z"^^xsd:dateTime ;
         dct:modified       "2020-10-05T13:15:39.831Z"^^xsd:dateTime ;
         foaf:primaryTopic  <http://public-service-publisher.fellesdatakatalog.digdir.no/services/1> .
 
-<http://localhost:5000/public-services/6ce4e524-3226-3591-ad99-c026705d4259>
+<http://localhost:5050/public-services/6ce4e524-3226-3591-ad99-c026705d4259>
         a                  dcat:CatalogRecord ;
         dct:identifier     "6ce4e524-3226-3591-ad99-c026705d4259" ;
-        dct:isPartOf    <http://localhost:5000/public-services/catalogs/4d2c9e29-2f9a-304f-9e48-34e30a36d068> ;
+        dct:isPartOf    <http://localhost:5050/public-services/catalogs/e09277f3-1eec-3ab9-a979-79259736d768> ;
         dct:issued         "2020-10-05T13:15:39.831Z"^^xsd:dateTime ;
         dct:modified       "2020-10-05T13:15:39.831Z"^^xsd:dateTime ;
         foaf:primaryTopic  <http://public-service-publisher.fellesdatakatalog.digdir.no/services/2> .
 
-<http://localhost:5000/public-services/31249174-df02-3746-9d61-59fc61b4c5f9>
+<http://localhost:5050/public-services/31249174-df02-3746-9d61-59fc61b4c5f9>
         a                  dcat:CatalogRecord ;
         dct:identifier     "31249174-df02-3746-9d61-59fc61b4c5f9" ;
-        dct:isPartOf    <http://localhost:5000/public-services/catalogs/4d2c9e29-2f9a-304f-9e48-34e30a36d068> ;
+        dct:isPartOf    <http://localhost:5050/public-services/catalogs/e09277f3-1eec-3ab9-a979-79259736d768> ;
         dct:issued         "2020-10-05T13:15:39.831Z"^^xsd:dateTime ;
         dct:modified       "2020-10-05T13:15:39.831Z"^^xsd:dateTime ;
         foaf:primaryTopic  <http://public-service-publisher.fellesdatakatalog.digdir.no/services/3> .
@@ -81,10 +81,10 @@
        <http://publications.europa.eu/resource/authority/language/NOB>;
    .
 
-<http://localhost:5000/public-services/1fc38c3c-1c86-3161-a9a7-e443fd94d413>
+<http://localhost:5050/public-services/1fc38c3c-1c86-3161-a9a7-e443fd94d413>
         a                  dcat:CatalogRecord ;
         dct:identifier     "1fc38c3c-1c86-3161-a9a7-e443fd94d413" ;
-        dct:isPartOf    <http://localhost:5000/public-services/catalogs/4d2c9e29-2f9a-304f-9e48-34e30a36d068> ;
+        dct:isPartOf    <http://localhost:5050/public-services/catalogs/e09277f3-1eec-3ab9-a979-79259736d768> ;
         dct:issued         "2020-10-05T13:15:39.831Z"^^xsd:dateTime ;
         dct:modified       "2020-10-05T13:15:39.831Z"^^xsd:dateTime ;
         foaf:primaryTopic  <https://raw.githubusercontent.com/Informasjonsforvaltning/cpsv-ap-no/develop/examples/exTjenesteDummy.ttl> .
@@ -103,18 +103,18 @@
   cv:hasParticipation  <http://test.no/services/1/.well-known/skolem/37ab3545-d4b2-3fed-b923-e5a3a4b4c91b> ;
   dct:title "Test service 1"@en .
 
-<http://localhost:5000/public-services/ef4ca382-ee65-3a92-be9e-40fd93da53bc>
+<http://localhost:5050/public-services/ef4ca382-ee65-3a92-be9e-40fd93da53bc>
         a               dcat:CatalogRecord ;
         dct:identifier  "ef4ca382-ee65-3a92-be9e-40fd93da53bc" ;
-        dct:isPartOf    <http://localhost:5000/public-services/catalogs/b7c6d34c-624d-3c72-9e30-2b608e433ad7> ;
+        dct:isPartOf    <http://localhost:5050/public-services/catalogs/b7c6d34c-624d-3c72-9e30-2b608e433ad7> ;
         dct:issued      "2020-10-05T13:15:39.831Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> ;
         dct:modified    "2020-10-05T13:15:39.831Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> ;
         foaf:primaryTopic <http://test.no/services/0> .
 
-<http://localhost:5000/public-services/7baa248b-1a27-3c46-80cf-889882d6b894>
+<http://localhost:5050/public-services/7baa248b-1a27-3c46-80cf-889882d6b894>
         a               dcat:CatalogRecord ;
         dct:identifier  "7baa248b-1a27-3c46-80cf-889882d6b894" ;
-        dct:isPartOf    <http://localhost:5000/public-services/catalogs/b7c6d34c-624d-3c72-9e30-2b608e433ad7> ;
+        dct:isPartOf    <http://localhost:5050/public-services/catalogs/b7c6d34c-624d-3c72-9e30-2b608e433ad7> ;
         dct:issued      "2020-10-05T13:15:39.831Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> ;
         dct:modified    "2020-10-05T13:15:39.831Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> ;
         foaf:primaryTopic <http://test.no/services/1> .

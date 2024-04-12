@@ -34,7 +34,7 @@ class UpdateServiceTest {
             whenever(turtleService.getPublicService(SERVICE_ID_1, false))
                 .thenReturn(responseReader.readFile("no_meta_service_1.ttl"))
             whenever(valuesMock.publicServiceHarvesterUri)
-                .thenReturn("http://localhost:5000/public-services")
+                .thenReturn("http://localhost:5050/public-services")
 
             updateService.updateMetaData()
 
