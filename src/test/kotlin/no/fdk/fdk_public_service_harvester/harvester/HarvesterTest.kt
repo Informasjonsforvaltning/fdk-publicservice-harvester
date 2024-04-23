@@ -49,17 +49,17 @@ class HarvesterTest {
 
         argumentCaptor<Model, String, Boolean>().apply {
             verify(turtleService, times(4)).saveAsPublicService(first.capture(), second.capture(), third.capture())
-            assertTrue(checkIfIsomorphicAndPrintDiff(first.allValues[0], responseReader.parseFile("no_meta_service_0.ttl", "TURTLE"), "harvestDataSourceSavedWhenDBIsEmpty-norecords0"))
+            assertTrue(checkIfIsomorphicAndPrintDiff(first.allValues[2], responseReader.parseFile("no_meta_service_0.ttl", "TURTLE"), "harvestDataSourceSavedWhenDBIsEmpty-norecords0"))
             assertTrue(checkIfIsomorphicAndPrintDiff(first.allValues[1], responseReader.parseFile("no_meta_service_1.ttl", "TURTLE"), "harvestDataSourceSavedWhenDBIsEmpty-norecords1"))
-            assertTrue(checkIfIsomorphicAndPrintDiff(first.allValues[2], responseReader.parseFile("no_meta_service_2.ttl", "TURTLE"), "harvestDataSourceSavedWhenDBIsEmpty-norecords2"))
+            assertTrue(checkIfIsomorphicAndPrintDiff(first.allValues[0], responseReader.parseFile("no_meta_service_2.ttl", "TURTLE"), "harvestDataSourceSavedWhenDBIsEmpty-norecords2"))
             assertTrue(checkIfIsomorphicAndPrintDiff(first.allValues[3], responseReader.parseFile("no_meta_service_3.ttl", "TURTLE"), "harvestDataSourceSavedWhenDBIsEmpty-norecords3"))
-            assertEquals(listOf(SERVICE_ID_0, SERVICE_ID_1, SERVICE_ID_2, SERVICE_ID_3), second.allValues)
+            assertEquals(listOf(SERVICE_ID_2, SERVICE_ID_1, SERVICE_ID_0, SERVICE_ID_3), second.allValues)
             Assertions.assertEquals(listOf(false, false, false, false), third.allValues)
         }
 
         argumentCaptor<PublicServiceMeta>().apply {
             verify(metaRepository, times(4)).save(capture())
-            assertEquals(listOf(SERVICE_META_0.copy(isPartOf = null), SERVICE_META_1.copy(isPartOf = null), SERVICE_META_2.copy(isPartOf = null), SERVICE_META_3.copy(isPartOf = null)), allValues)
+            assertEquals(listOf(SERVICE_META_2.copy(isPartOf = null), SERVICE_META_1.copy(isPartOf = null), SERVICE_META_0.copy(isPartOf = null), SERVICE_META_3.copy(isPartOf = null)), allValues)
         }
 
         argumentCaptor<CatalogMeta>().apply {
@@ -83,8 +83,8 @@ class HarvesterTest {
             endTime = report!!.endTime,
             changedCatalogs = listOf(FdkIdAndUri(fdkId=CATALOG_ID_0, uri=CATALOG_META_0.uri)),
             changedResources = listOf(
-                FdkIdAndUri(fdkId= SERVICE_ID_0, uri= SERVICE_META_0.uri), FdkIdAndUri(fdkId= SERVICE_ID_1, uri= SERVICE_META_1.uri),
-                FdkIdAndUri(fdkId= SERVICE_ID_2, uri= SERVICE_META_2.uri), FdkIdAndUri(fdkId= SERVICE_ID_3, uri= SERVICE_META_3.uri))
+                FdkIdAndUri(fdkId= SERVICE_ID_2, uri= SERVICE_META_2.uri), FdkIdAndUri(fdkId= SERVICE_ID_1, uri= SERVICE_META_1.uri),
+                FdkIdAndUri(fdkId= SERVICE_ID_0, uri= SERVICE_META_0.uri), FdkIdAndUri(fdkId= SERVICE_ID_3, uri= SERVICE_META_3.uri))
         )
 
         assertEquals(expectedReport, report)
@@ -143,9 +143,9 @@ class HarvesterTest {
             endTime = report!!.endTime,
             changedCatalogs = listOf(FdkIdAndUri(fdkId=CATALOG_ID_0, uri=CATALOG_META_0.uri)),
             changedResources=listOf(
-                FdkIdAndUri(fdkId="d5d0c07c-c14f-3741-9aa3-126960958cf0", uri="http://public-service-publisher.fellesdatakatalog.digdir.no/services/1"),
-                FdkIdAndUri(fdkId="6ce4e524-3226-3591-ad99-c026705d4259", uri="http://public-service-publisher.fellesdatakatalog.digdir.no/services/2"),
                 FdkIdAndUri(fdkId="31249174-df02-3746-9d61-59fc61b4c5f9", uri="http://public-service-publisher.fellesdatakatalog.digdir.no/services/3"),
+                FdkIdAndUri(fdkId="6ce4e524-3226-3591-ad99-c026705d4259", uri="http://public-service-publisher.fellesdatakatalog.digdir.no/services/2"),
+                FdkIdAndUri(fdkId="d5d0c07c-c14f-3741-9aa3-126960958cf0", uri="http://public-service-publisher.fellesdatakatalog.digdir.no/services/1"),
                 FdkIdAndUri(fdkId="1fc38c3c-1c86-3161-a9a7-e443fd94d413", uri="https://raw.githubusercontent.com/Informasjonsforvaltning/cpsv-ap-no/develop/examples/exTjenesteDummy.ttl"))
         )
 
