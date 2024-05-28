@@ -27,7 +27,6 @@ fun splitCatalogsFromRDF(harvested: Model, allServices: List<PublicServiceRDFMod
     val harvestedCatalogs = harvested.listResourcesWithProperty(RDF.type, DCAT.Catalog)
         .toList()
         .excludeBlankNodes(sourceURL)
-        .filter { it.hasProperty(DCATNO.containsService) }
         .map { resource ->
             val catalogServices: Set<String> = resource.listProperties(DCATNO.containsService)
                 .toList()
