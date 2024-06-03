@@ -12,6 +12,7 @@ import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import java.io.BufferedReader
 import java.net.HttpURLConnection
+import java.net.URI
 import java.net.URL
 
 private val logger = LoggerFactory.getLogger(HarvestAdminAdapter::class.java)
@@ -21,8 +22,8 @@ class HarvestAdminAdapter(private val applicationProperties: ApplicationProperti
 
     fun urlWithParameters(params: HarvestAdminParameters): URL {
         val pathString: String = when {
-            params.publisherId.isNullOrBlank() -> "/datasources"
-            else -> "/organizations/${params.publisherId}/datasources"
+            params.publisherId.isNullOrBlank() -> "/internal/datasources"
+            else -> "/internal/organizations/${params.publisherId}/datasources"
         }
 
         val paramString: String = when {
@@ -34,12 +35,12 @@ class HarvestAdminAdapter(private val applicationProperties: ApplicationProperti
             else -> ""
         }
 
-        return URL("${applicationProperties.harvestAdminRootUrl}$pathString$paramString")
+        return URI("${applicationProperties.harvestAdminRootUrl}$pathString$paramString").toURL()
     }
 
     private fun urlForSingleDataSource(params: HarvestAdminParameters): URL {
-        val path = "/organizations/${params.publisherId}/datasources/${params.dataSourceId}"
-        return URL("${applicationProperties.harvestAdminRootUrl}$path")
+        val path = "/internal/organizations/${params.publisherId}/datasources/${params.dataSourceId}"
+        return URI("${applicationProperties.harvestAdminRootUrl}$path").toURL()
     }
 
     fun getDataSources(params: HarvestAdminParameters): List<HarvestDataSource> =
@@ -59,6 +60,7 @@ class HarvestAdminAdapter(private val applicationProperties: ApplicationProperti
             try {
                 setRequestProperty(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON.toString())
                 setRequestProperty(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+                setRequestProperty("X-API-KEY", applicationProperties.harvestAdminApiKey)
 
                 if (HttpStatus.valueOf(responseCode).is2xxSuccessful) {
                     return inputStream.bufferedReader().use(BufferedReader::readText)
