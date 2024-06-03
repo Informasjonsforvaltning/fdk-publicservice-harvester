@@ -20,6 +20,7 @@ application:
   organizationsUri: ${ORGANIZATION_CATALOG_URI:https://organization-catalog.staging.fellesdatakatalog.digdir.no}/organizations
   publicServiceHarvesterUri: ${FDK_BASE_URI:https://staging.fellesdatakatalog.digdir.no}/public-services
   harvestAdminRootUrl: ${HARVEST_ADMIN_ROOT_URL:http://new-harvest-admin:8080}
+  harvestAdminApiKey: ${ADMIN_API_KEY}
 management:
   endpoints:
     web:
@@ -43,6 +44,7 @@ spring:
 application:
   publicServiceHarvesterUri: https://staging.fellesdatakatalog.digdir.no/public-services
   harvestAdminRootUrl: https://new-admin.staging.fellesdatakatalog.digdir.no
+  harvestAdminApiKey: test-key
 
 ---
 spring:
@@ -59,3 +61,4 @@ application:
   organizationsUri: http://localhost:5050/organizations
   publicServiceHarvesterUri: http://localhost:5050/public-services
   harvestAdminRootUrl: http://localhost:5050
+  harvestAdminApiKey: test-key
