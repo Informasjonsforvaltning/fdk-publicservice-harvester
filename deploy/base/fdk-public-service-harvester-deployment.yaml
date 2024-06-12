@@ -1,0 +1,37 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    fdk.service: fdk-public-service-harvester
+  name: fdk-public-service-harvester
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      fdk.service: fdk-public-service-harvester
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        fdk.service: fdk-public-service-harvester
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/prometheus"  
+    spec:
+      containers:
+        - name: fdk-public-service-harvester
+          image: fdk-public-service-harvester
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "850Mi"
+              cpu: "20m"
+            limits:
+              memory: "850Mi"
+status: {}
