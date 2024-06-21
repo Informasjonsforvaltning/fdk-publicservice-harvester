@@ -179,16 +179,32 @@ class PublicServicesHarvester(
     }
 
     private fun updateServices(services: List<PublicServiceRDFModel>, harvestDate: Calendar, forceUpdate: Boolean): List<FdkIdAndUri> =
-        services
-            .map { Pair(it, serviceMetaRepository.findByIdOrNull(it.resourceURI)) }
-            .filter { forceUpdate || it.first.hasChanges(it.second?.fdkId) }
-            .map {
-                val updatedMeta = it.first.mapToMetaDBO(harvestDate, it.second)
-                serviceMetaRepository.save(updatedMeta)
-                turtleService.saveAsPublicService(it.first.harvested, updatedMeta.fdkId, false)
+        services.mapNotNull {
+            it.updateDBOs(harvestDate, forceUpdate)
+                ?.let { meta -> FdkIdAndUri(fdkId = meta.fdkId, uri = it.resourceURI) }
+        }
 
-                FdkIdAndUri(fdkId = updatedMeta.fdkId, uri = it.first.resourceURI)
+    private fun PublicServiceRDFModel.updateDBOs(harvestDate: Calendar, forceUpdate: Boolean): PublicServiceMeta? {
+        val dbMeta = serviceMetaRepository.findByIdOrNull(resourceURI)
+        return when {
+            dbMeta == null || dbMeta.removed || hasChanges(dbMeta.fdkId) -> {
+                val updatedMeta = mapToMetaDBO(harvestDate, dbMeta)
+                serviceMetaRepository.save(updatedMeta)
+                turtleService.saveAsPublicService(harvested, updatedMeta.fdkId, false)
+
+                updatedMeta
             }
+            forceUpdate -> {
+                turtleService.saveAsPublicService(
+                    model = harvested,
+                    fdkId = dbMeta.fdkId,
+                    withRecords = false
+                )
+                dbMeta
+            }
+            else -> null
+        }
+    }
 
     private fun PublicServiceRDFModel.mapToMetaDBO(
         harvestDate: Calendar,

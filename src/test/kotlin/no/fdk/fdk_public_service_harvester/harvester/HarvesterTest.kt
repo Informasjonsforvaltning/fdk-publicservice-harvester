@@ -320,4 +320,56 @@ class HarvesterTest {
         assertEquals(expectedReport, report)
     }
 
+    @Test
+    fun earlierRemovedServiceWithNoChangesAddedToReport() {
+        val harvested = responseReader.readFile("harvest_response_0.ttl")
+        whenever(adapter.fetchServices(TEST_HARVEST_SOURCE))
+            .thenReturn(harvested)
+        whenever(turtleService.getHarvestSource(TEST_HARVEST_SOURCE.url!!))
+            .thenReturn(responseReader.readFile("harvest_response_empty.ttl"))
+        whenever(metaRepository.findById(SERVICE_META_0.uri))
+            .thenReturn(Optional.of(SERVICE_META_0.copy(removed = true)))
+        whenever(metaRepository.findById(SERVICE_META_1.uri))
+            .thenReturn(Optional.of(SERVICE_META_1))
+        whenever(metaRepository.findById(SERVICE_META_2.uri))
+            .thenReturn(Optional.of(SERVICE_META_2))
+        whenever(metaRepository.findById(SERVICE_META_3.uri))
+            .thenReturn(Optional.of(SERVICE_META_3))
+        whenever(metaRepository.findAllByIsPartOf("http://localhost:5050/public-services/catalogs/${CATALOG_META_0.fdkId}"))
+            .thenReturn(listOf(SERVICE_META_0.copy(removed = true), SERVICE_META_1, SERVICE_META_2, SERVICE_META_3))
+        whenever(turtleService.getPublicService(SERVICE_ID_0, withRecords = false))
+            .thenReturn(responseReader.readFile("no_meta_service_0.ttl"))
+        whenever(turtleService.getPublicService(SERVICE_ID_1, withRecords = false))
+            .thenReturn(responseReader.readFile("no_meta_service_1.ttl"))
+        whenever(turtleService.getPublicService(SERVICE_ID_2, withRecords = false))
+            .thenReturn(responseReader.readFile("no_meta_service_2.ttl"))
+        whenever(turtleService.getPublicService(SERVICE_ID_3, withRecords = false))
+            .thenReturn(responseReader.readFile("no_meta_service_3.ttl"))
+
+        whenever(valuesMock.publicServiceHarvesterUri)
+            .thenReturn("http://localhost:5050/public-services")
+
+        val report = harvester.harvestServices(TEST_HARVEST_SOURCE, TEST_HARVEST_DATE, false)
+
+        argumentCaptor<PublicServiceMeta>().apply {
+            verify(metaRepository, times(1)).save(capture())
+            assertEquals(SERVICE_META_0, firstValue)
+        }
+
+        val expectedReport = HarvestReport(
+            id="test-source",
+            url="http://localhost:5050/fdk-public-service-publisher.ttl",
+            dataType="publicService",
+            harvestError=false,
+            startTime = "2020-10-05 15:15:39 +0200",
+            endTime = report!!.endTime,
+            changedCatalogs=listOf(
+                FdkIdAndUri(fdkId=CATALOG_ID_0, uri="http://localhost:5050/fdk-public-service-publisher.ttl#GeneratedCatalog")),
+            changedResources = listOf(
+                FdkIdAndUri(fdkId= SERVICE_ID_0, uri= SERVICE_META_0.uri))
+        )
+
+        assertEquals(expectedReport, report)
+    }
+
 }
