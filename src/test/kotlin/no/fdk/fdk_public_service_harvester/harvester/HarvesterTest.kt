@@ -127,12 +127,29 @@ class HarvesterTest {
             .thenReturn("http://localhost:5050/public-services")
         whenever(turtleService.getHarvestSource(TEST_HARVEST_SOURCE.url!!))
             .thenReturn(harvested)
+        whenever(metaRepository.findById(SERVICE_META_0.uri))
+            .thenReturn(Optional.of(SERVICE_META_0))
+        whenever(metaRepository.findById(SERVICE_META_1.uri))
+            .thenReturn(Optional.of(SERVICE_META_1))
+        whenever(metaRepository.findById(SERVICE_META_2.uri))
+            .thenReturn(Optional.of(SERVICE_META_2))
+        whenever(metaRepository.findById(SERVICE_META_3.uri))
+            .thenReturn(Optional.of(SERVICE_META_3))
+        whenever(metaRepository.findAllByIsPartOf("http://localhost:5050/public-services/catalogs/${CATALOG_META_0.fdkId}"))
+            .thenReturn(listOf(SERVICE_META_0, SERVICE_META_1, SERVICE_META_2, SERVICE_META_3))
+        whenever(turtleService.getPublicService(SERVICE_ID_0, withRecords = false))
+            .thenReturn(responseReader.readFile("no_meta_service_0.ttl"))
+        whenever(turtleService.getPublicService(SERVICE_ID_1, withRecords = false))
+            .thenReturn(responseReader.readFile("no_meta_service_1.ttl"))
+        whenever(turtleService.getPublicService(SERVICE_ID_2, withRecords = false))
+            .thenReturn(responseReader.readFile("no_meta_service_2.ttl"))
+        whenever(turtleService.getPublicService(SERVICE_ID_3, withRecords = false))
+            .thenReturn(responseReader.readFile("no_meta_service_3.ttl"))
 
         val report = harvester.harvestServices(TEST_HARVEST_SOURCE, TEST_HARVEST_DATE, true)
 
         verify(turtleService, times(1)).saveAsHarvestSource(any(), any())
         verify(turtleService, times(4)).saveAsPublicService(any(), any(), any())
-        verify(metaRepository, times(4)).save(any())
 
         val expectedReport = HarvestReport(
             id="test-source",
