@@ -16,6 +16,7 @@ import java.net.URL
 import org.springframework.http.HttpStatus
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
+import java.net.URI
 
 private val logger = LoggerFactory.getLogger(ApiTestContext::class.java)
 
@@ -48,9 +49,9 @@ fun apiGet(endpoint: String, acceptHeader: String?, port: Int): Map<String,Any> 
     }
 }
 
-fun apiAuthorizedPost(path: String, token: String?, port: Int): Map<String, Any> {
-    val connection  = URL("http://localhost:$port$path").openConnection() as HttpURLConnection
-    connection.requestMethod = "POST"
+fun authorizedRequest(path: String, token: String?, port: Int, method: String = "POST"): Map<String, Any> {
+    val connection  = URI("http://localhost:$port$path").toURL().openConnection() as HttpURLConnection
+    connection.requestMethod = method
 
     if(!token.isNullOrEmpty()) {
         connection.setRequestProperty("Authorization", "Bearer $token")

@@ -1,8 +1,11 @@
 package no.fdk.fdk_public_service_harvester.contract
 
 import no.fdk.fdk_public_service_harvester.utils.*
+import no.fdk.fdk_public_service_harvester.utils.jwk.Access
+import no.fdk.fdk_public_service_harvester.utils.jwk.JwtToken
 import org.apache.jena.riot.Lang
 import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.http.HttpStatus
@@ -70,6 +73,45 @@ class PublicServicesTest: ApiTestContext() {
     fun idDoesNotExist() {
         val response = apiGet("/public-services/123", "text/turtle", port)
         Assertions.assertEquals(HttpStatus.NOT_FOUND.value(), response["status"])
+    }
+
+    @Nested
+    internal inner class RemoveServiceById {
+
+        @Test
+        fun unauthorizedForNoToken() {
+            val response = authorizedRequest("/public-services/$SERVICE_ID_0", null, port, "DELETE")
+            assertEquals(HttpStatus.UNAUTHORIZED.value(), response["status"])
+        }
+
+        @Test
+        fun forbiddenWithNonSysAdminRole() {
+            val response = authorizedRequest(
+                "/public-services/$SERVICE_ID_0",
+                JwtToken(Access.ORG_WRITE).toString(),
+                port,
+                "DELETE"
+            )
+            assertEquals(HttpStatus.FORBIDDEN.value(), response["status"])
+        }
+
+        @Test
+        fun notFoundWhenIdNotInDB() {
+            val response =
+                authorizedRequest("/public-services/123", JwtToken(Access.ROOT).toString(), port, "DELETE")
+            assertEquals(HttpStatus.NOT_FOUND.value(), response["status"])
+        }
+
+        @Test
+        fun okWithSysAdminRole() {
+            val response = authorizedRequest(
+                "/public-services/$SERVICE_ID_0",
+                JwtToken(Access.ROOT).toString(),
+                port,
+                "DELETE"
+            )
+            assertEquals(HttpStatus.NO_CONTENT.value(), response["status"])
+        }
     }
 
 }

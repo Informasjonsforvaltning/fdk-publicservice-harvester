@@ -26,14 +26,14 @@ class UpdateTest: ApiTestContext() {
 
     @Test
     fun unauthorizedForNoToken() {
-        val response = apiAuthorizedPost("/update/meta", null, port)
+        val response = authorizedRequest("/update/meta", null, port)
 
         assertEquals(HttpStatus.UNAUTHORIZED.value(), response["status"])
     }
 
     @Test
     fun forbiddenForNonSysAdminRole() {
-        val response = apiAuthorizedPost("/update/meta", JwtToken(Access.ORG_WRITE).toString(), port)
+        val response = authorizedRequest("/update/meta", JwtToken(Access.ORG_WRITE).toString(), port)
 
         assertEquals(HttpStatus.FORBIDDEN.value(), response["status"])
     }
@@ -43,7 +43,7 @@ class UpdateTest: ApiTestContext() {
         val services = apiGet("/public-services?catalogrecords=true", "text/turtle", port)
         val catalogs = apiGet("/public-services/catalogs?catalogrecords=true", "text/turtle", port)
 
-        val response = apiAuthorizedPost("/update/meta", JwtToken(Access.ROOT).toString(), port)
+        val response = authorizedRequest("/update/meta", JwtToken(Access.ROOT).toString(), port)
 
         assertEquals(HttpStatus.OK.value(), response["status"])
 
