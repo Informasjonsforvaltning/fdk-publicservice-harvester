@@ -1,19 +1,32 @@
 package no.fdk.fdk_public_service_harvester.service
 
+import no.fdk.fdk_public_service_harvester.model.FdkIdAndUri
+import no.fdk.fdk_public_service_harvester.model.HarvestReport
+import no.fdk.fdk_public_service_harvester.model.PublicServiceMeta
+import no.fdk.fdk_public_service_harvester.rabbit.RabbitMQPublisher
+import no.fdk.fdk_public_service_harvester.repository.PublicServicesRepository
 import no.fdk.fdk_public_service_harvester.utils.*
 import org.apache.jena.riot.Lang
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.springframework.web.server.ResponseStatusException
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @Tag("unit")
 class PublicServicesServiceTest {
+    private val repository: PublicServicesRepository = mock()
+    private val publisher: RabbitMQPublisher = mock()
     private val turtleService: TurtleService = mock()
-    private val service = PublicServicesService(turtleService)
+    private val service = PublicServicesService(repository, publisher, turtleService)
 
     private val responseReader = TestResponseReader()
 
@@ -83,6 +96,60 @@ class PublicServicesServiceTest {
 
             assertTrue(expected.isIsomorphicWith(responseReader.parseResponse(responseTurtle!!, "TURTLE")))
             assertTrue(expectedNoRecords.isIsomorphicWith(responseReader.parseResponse(responseRDFXML!!, "RDF/XML")))
+        }
+
+    }
+
+    @Nested
+    internal inner class RemoveServiceById {
+
+        @Test
+        fun throwsResponseStatusExceptionWhenNoMetaFoundInDB() {
+            whenever(repository.findAllByFdkId("123"))
+                .thenReturn(emptyList())
+
+            assertThrows<ResponseStatusException> { service.removeService("123") }
+        }
+
+        @Test
+        fun throwsExceptionWhenNoNonRemovedMetaFoundInDB() {
+            whenever(repository.findAllByFdkId(SERVICE_ID_0))
+                .thenReturn(listOf(SERVICE_META_0.copy(removed = true)))
+
+            assertThrows<ResponseStatusException> { service.removeService(SERVICE_ID_0) }
+        }
+
+        @Test
+        fun updatesMetaAndSendsRabbitReportWhenMetaIsFound() {
+            whenever(repository.findAllByFdkId(SERVICE_ID_0))
+                .thenReturn(listOf(SERVICE_META_0))
+
+            service.removeService(SERVICE_ID_0)
+
+            argumentCaptor<List<PublicServiceMeta>>().apply {
+                verify(repository, times(1)).saveAll(capture())
+                assertEquals(listOf(SERVICE_META_0.copy(removed = true)), firstValue)
+            }
+
+            val expectedReport = HarvestReport(
+                id = "manual-delete-$SERVICE_ID_0",
+                url = SERVICE_META_0.uri,
+                harvestError = false,
+                startTime = "startTime",
+                endTime = "endTime",
+                removedResources = listOf(FdkIdAndUri(SERVICE_META_0.fdkId, SERVICE_META_0.uri))
+            )
+            argumentCaptor<List<HarvestReport>>().apply {
+                verify(publisher, times(1)).send(capture())
+
+                assertEquals(
+                    listOf(expectedReport.copy(
+                        startTime = firstValue.first().startTime,
+                        endTime = firstValue.first().endTime
+                    )),
+                    firstValue
+                )
+            }
         }
 
     }
