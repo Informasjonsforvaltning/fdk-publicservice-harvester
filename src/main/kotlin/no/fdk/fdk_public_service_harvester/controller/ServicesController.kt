@@ -1,6 +1,7 @@
 package no.fdk.fdk_public_service_harvester.controller
 
 import jakarta.servlet.http.HttpServletRequest
+import no.fdk.fdk_public_service_harvester.model.DuplicateIRI
 import no.fdk.fdk_public_service_harvester.rdf.jenaTypeFromAcceptHeader
 import no.fdk.fdk_public_service_harvester.service.EndpointPermissions
 import no.fdk.fdk_public_service_harvester.service.PublicServicesService
@@ -14,6 +15,8 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 
@@ -67,6 +70,16 @@ open class ServicesController(
         if (endpointPermissions.hasAdminPermission(jwt)) {
             publicServicesService.removeService(id)
             ResponseEntity(HttpStatus.NO_CONTENT)
+        } else ResponseEntity(HttpStatus.FORBIDDEN)
+
+    @PostMapping("/duplicates")
+    fun removeDuplicates(
+        @AuthenticationPrincipal jwt: Jwt,
+        @RequestBody duplicates: List<DuplicateIRI>
+    ): ResponseEntity<Void> =
+        if (endpointPermissions.hasAdminPermission(jwt)) {
+            publicServicesService.removeDuplicates(duplicates)
+            ResponseEntity(HttpStatus.OK)
         } else ResponseEntity(HttpStatus.FORBIDDEN)
 
 }
