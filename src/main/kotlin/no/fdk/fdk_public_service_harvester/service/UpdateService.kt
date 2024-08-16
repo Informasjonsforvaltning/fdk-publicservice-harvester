@@ -17,10 +17,7 @@ import org.apache.jena.sparql.vocabulary.FOAF
 import org.apache.jena.vocabulary.DCAT
 import org.apache.jena.vocabulary.DCTerms
 import org.apache.jena.vocabulary.RDF
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-
-private val LOGGER = LoggerFactory.getLogger(UpdateService::class.java)
 
 @Service
 class UpdateService (
