@@ -109,17 +109,17 @@ class PublicServicesTest : ApiTestContext() {
 
         @Test
         fun unauthorizedForNoToken() {
-            val response = authorizedRequest("/public-services/$SERVICE_ID_0", null, port, HttpMethod.DELETE)
+            val response = authorizedRequest("/public-services/$SERVICE_ID_0/remove", null, port, HttpMethod.POST)
             assertEquals(HttpStatus.UNAUTHORIZED.value(), response["status"])
         }
 
         @Test
         fun forbiddenWithNonSysAdminRole() {
             val response = authorizedRequest(
-                "/public-services/$SERVICE_ID_0",
+                "/public-services/$SERVICE_ID_0/remove",
                 JwtToken(Access.ORG_WRITE).toString(),
                 port,
-                HttpMethod.DELETE
+                HttpMethod.POST
             )
             assertEquals(HttpStatus.FORBIDDEN.value(), response["status"])
         }
@@ -127,19 +127,19 @@ class PublicServicesTest : ApiTestContext() {
         @Test
         fun notFoundWhenIdNotInDB() {
             val response =
-                authorizedRequest("/public-services/123", JwtToken(Access.ROOT).toString(), port, HttpMethod.DELETE)
+                authorizedRequest("/public-services/123/remove", JwtToken(Access.ROOT).toString(), port, HttpMethod.POST)
             assertEquals(HttpStatus.NOT_FOUND.value(), response["status"])
         }
 
         @Test
         fun okWithSysAdminRole() {
             val response = authorizedRequest(
-                "/public-services/$SERVICE_ID_0",
+                "/public-services/$SERVICE_ID_0/remove",
                 JwtToken(Access.ROOT).toString(),
                 port,
-                HttpMethod.DELETE
+                HttpMethod.POST
             )
-            assertEquals(HttpStatus.NO_CONTENT.value(), response["status"])
+            assertEquals(HttpStatus.OK.value(), response["status"])
         }
     }
 
