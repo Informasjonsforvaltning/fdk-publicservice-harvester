@@ -97,6 +97,11 @@ class TurtleService(
             ?.turtle
             ?.let { ungzip(it) }
 
+    fun deleteServiceFiles(fdkId: String) {
+        serviceRepository.deleteById(fdkId)
+        fdkServiceRepository.deleteById(fdkId)
+    }
+
 }
 
 private fun Model.createCatalogTurtleDBO(id: String): CatalogTurtle =
