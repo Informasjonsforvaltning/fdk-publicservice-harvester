@@ -62,14 +62,14 @@ open class ServicesController(
         else ResponseEntity(publicServicesService.getAllServices(returnType ?: Lang.TURTLE, catalogRecords), HttpStatus.OK)
     }
 
-    @DeleteMapping("/{id}")
+    @PostMapping("/{id}/remove")
     fun removeServiceById(
         @AuthenticationPrincipal jwt: Jwt,
         @PathVariable id: String
     ): ResponseEntity<Void> =
         if (endpointPermissions.hasAdminPermission(jwt)) {
             publicServicesService.removeService(id)
-            ResponseEntity(HttpStatus.NO_CONTENT)
+            ResponseEntity(HttpStatus.OK)
         } else ResponseEntity(HttpStatus.FORBIDDEN)
 
     @PostMapping("/duplicates")
