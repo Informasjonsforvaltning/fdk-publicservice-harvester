@@ -117,4 +117,13 @@ class PublicServicesService(
         }
     }
 
+    // Purges everything associated with a removed fdkID
+    fun purgeByFdkId(fdkId: String) {
+        servicesRepository.findAllByFdkId(fdkId)
+            .also { services -> if (services.any { !it.removed }) throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Unable to purge files, service with id $fdkId has not been removed") }
+            .run { servicesRepository.deleteAll(this) }
+
+        turtleService.deleteServiceFiles(fdkId)
+    }
+
 }

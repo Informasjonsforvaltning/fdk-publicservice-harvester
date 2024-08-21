@@ -44,6 +44,25 @@ val SERVICE_TURTLE_1_NO_META = PublicServiceTurtle(
     turtle = gzip(responseReader.readFile("no_meta_service_1.ttl"))
 )
 
+val REMOVED_SERVICE_META = PublicServiceMeta(
+    uri = "http://public-service-publisher.fellesdatakatalog.digdir.no/services/removed",
+    fdkId = "removed",
+    isPartOf ="http://localhost:5050/public-services/catalogs/e09277f3-1eec-3ab9-a979-79259736d768",
+    removed = true,
+    issued = TEST_HARVEST_DATE.timeInMillis,
+    modified = TEST_HARVEST_DATE.timeInMillis
+)
+
+val REMOVED_SERVICE_TURTLE_META = FDKPublicServiceTurtle(
+    id = "removed",
+    turtle = gzip(responseReader.readFile("service_1.ttl"))
+)
+
+val REMOVED_SERVICE_TURTLE_NO_META = PublicServiceTurtle(
+    id = "removed",
+    turtle = gzip(responseReader.readFile("no_meta_service_1.ttl"))
+)
+
 val SERVICE_META_2 = PublicServiceMeta(
     uri = "http://public-service-publisher.fellesdatakatalog.digdir.no/services/3",
     fdkId = SERVICE_ID_2,
@@ -182,20 +201,20 @@ val CATALOG_1_NO_META = FDKPublicServiceTurtle(
 fun serviceTurtleDBPopulation(): List<Document> =
     listOf(SERVICE_TURTLE_0_NO_META, SERVICE_TURTLE_1_NO_META, SERVICE_TURTLE_2_NO_META,
         UNION_DATA_NO_META, SERVICE_TURTLE_3_NO_META, SERVICE_TURTLE_4_NO_META,
-        SERVICE_TURTLE_5_NO_META)
+        SERVICE_TURTLE_5_NO_META, REMOVED_SERVICE_TURTLE_NO_META)
         .map { it.mapDBO() }
 
 fun fdkTurtleDBPopulation(): List<Document> =
     listOf(UNION_DATA, SERVICE_TURTLE_0_META, SERVICE_TURTLE_1_META,
         SERVICE_TURTLE_2_META, SERVICE_TURTLE_3_META, SERVICE_TURTLE_4_META,
-        SERVICE_TURTLE_5_META)
+        SERVICE_TURTLE_5_META, REMOVED_SERVICE_TURTLE_META)
         .map { it.mapDBO() }
 
 fun sourceTurtleDBPopulation(): List<Document> =
     listOf(HARVESTED_DBO).map { it.mapDBO() }
 
 fun metaDBPopulation(): List<Document> =
-    listOf(SERVICE_META_0, SERVICE_META_1, SERVICE_META_2, SERVICE_META_3, SERVICE_META_4, SERVICE_META_5)
+    listOf(SERVICE_META_0, SERVICE_META_1, SERVICE_META_2, SERVICE_META_3, SERVICE_META_4, SERVICE_META_5, REMOVED_SERVICE_META)
         .map { it.mapDBO() }
 
 fun metaCatalogPopulation(): List<Document> =
@@ -213,6 +232,7 @@ private fun PublicServiceMeta.mapDBO(): Document =
         .append("_id", uri)
         .append("fdkId", fdkId)
         .append("isPartOf", isPartOf)
+        .append("removed", removed)
         .append("issued", issued)
         .append("modified", modified)
 
