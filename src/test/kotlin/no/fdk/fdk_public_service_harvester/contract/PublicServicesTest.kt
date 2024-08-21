@@ -150,7 +150,7 @@ class PublicServicesTest : ApiTestContext() {
         fun unauthorizedForNoToken() {
             val body = listOf(DuplicateIRI(iriToRemove = SERVICE_META_0.uri, iriToRetain = SERVICE_META_1.uri))
             val response = authorizedRequest(
-                "/public-services/duplicates",
+                "/public-services/remove-duplicates",
                 null,
                 port,
                 HttpMethod.POST,
@@ -163,7 +163,7 @@ class PublicServicesTest : ApiTestContext() {
         fun forbiddenWithNonSysAdminRole() {
             val body = listOf(DuplicateIRI(iriToRemove = SERVICE_META_0.uri, iriToRetain = SERVICE_META_1.uri))
             val response = authorizedRequest(
-                "/public-services/duplicates",
+                "/public-services/remove-duplicates",
                 JwtToken(Access.ORG_WRITE).toString(),
                 port,
                 HttpMethod.POST,
@@ -177,7 +177,7 @@ class PublicServicesTest : ApiTestContext() {
             val body = listOf(DuplicateIRI(iriToRemove = "https://123.no", iriToRetain = SERVICE_META_1.uri))
             val response =
                 authorizedRequest(
-                    "/public-services/duplicates",
+                    "/public-services/remove-duplicates",
                     JwtToken(Access.ROOT).toString(),
                     port,
                     HttpMethod.POST,
@@ -190,7 +190,7 @@ class PublicServicesTest : ApiTestContext() {
         fun okWithSysAdminRole() {
             val body = listOf(DuplicateIRI(iriToRemove = SERVICE_META_0.uri, iriToRetain = SERVICE_META_1.uri))
             val response = authorizedRequest(
-                "/public-services/duplicates",
+                "/public-services/remove-duplicates",
                 JwtToken(Access.ROOT).toString(),
                 port,
                 HttpMethod.POST,
