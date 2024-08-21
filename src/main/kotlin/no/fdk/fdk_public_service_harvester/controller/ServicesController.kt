@@ -72,7 +72,7 @@ open class ServicesController(
             ResponseEntity(HttpStatus.OK)
         } else ResponseEntity(HttpStatus.FORBIDDEN)
 
-    @PostMapping("/duplicates")
+    @PostMapping("/remove-duplicates")
     fun removeDuplicates(
         @AuthenticationPrincipal jwt: Jwt,
         @RequestBody duplicates: List<DuplicateIRI>

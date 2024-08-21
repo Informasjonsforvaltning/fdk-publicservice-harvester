@@ -6,7 +6,6 @@ logging:
   level.org.apache.jena.riot: ERROR
 server:
   port: 8080
-  error.include-message: always
 spring:
   rabbitmq:
     host: rabbitmq
