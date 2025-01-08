@@ -6,5 +6,5 @@ resources:
   - fdk-public-service-harvester-service.yaml
 images:
   - name: fdk-public-service-harvester
-    newName: eu.gcr.io/digdir-fdk-infra/fdk-public-service-harvester
+    newName: ghcr.io/informasjonsforvaltning/fdk-public-service-harvester
     newTag: $(GIT_COMMIT_SHA)
