@@ -21,6 +21,7 @@ application:
   publicServiceHarvesterUri: ${FDK_BASE_URI:https://staging.fellesdatakatalog.digdir.no}/public-services
   harvestAdminRootUrl: ${HARVEST_ADMIN_ROOT_URL:http://new-harvest-admin:8080}
   harvestAdminApiKey: ${ADMIN_API_KEY}
+  cors.originPatterns: "${CORS_ORIGIN_PATTERNS}"
 management:
   endpoints:
     web:
@@ -45,6 +46,7 @@ application:
   publicServiceHarvesterUri: https://staging.fellesdatakatalog.digdir.no/public-services
   harvestAdminRootUrl: https://new-admin.staging.fellesdatakatalog.digdir.no
   harvestAdminApiKey: test-key
+  cors.originPatterns: "*"
 
 ---
 spring:
@@ -62,3 +64,4 @@ application:
   publicServiceHarvesterUri: http://localhost:5050/public-services
   harvestAdminRootUrl: http://localhost:5050
   harvestAdminApiKey: test-key
+  cors.originPatterns: "*"
